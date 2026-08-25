@@ -1,0 +1,23 @@
+From: "Project Management Office" <pmo-updates@globalenterprise.corp>
+To: engineering-leads@globalenterprise.corp
+Subject: Sprint Retrospective Notes & Q3 Roadmap Update
+Date: Tue, 25 Aug 2026 08:00:00 +0000
+Message-ID: <pmo.roadmap.2026.0825@globalenterprise.corp>
+DKIM-Signature: v=1; a=rsa-sha256; d=globalenterprise.corp; s=corporate; c=relaxed/relaxed; q=dns/txt; h=From:To:Subject:Date:Message-ID; bh=K8Fv29L9zX7+wE9=; b=dGVzdF9zaWduYXR1cmVfZGF0YV9mb3JfZGVtb19wdXJwb3Nlcw==
+Authentication-Results: mx.globalenterprise.corp; spf=pass (mx.globalenterprise.corp: domain of pmo-updates@globalenterprise.corp designates 209.85.220.41 as permitted sender) smtp.mailfrom=pmo-updates@globalenterprise.corp; dkim=pass header.d=globalenterprise.corp
+Received: from mail-relay.internal.globalenterprise.corp [10.0.4.12] by app-srv.internal [10.0.2.1] with ESMTP; Tue, 25 Aug 2026 08:00:02 +0000
+Received: from mail-sor-f41.google.com [209.85.220.41] by mx.globalenterprise.corp with ESMTPS; Tue, 25 Aug 2026 08:00:01 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+
+Hi Team,
+
+Thank you for participating in this morning's sprint retrospective. 
+
+The key takeaways and action items have been documented in the internal team knowledge base. Please review the updated milestones for the upcoming sprint release.
+
+Next sync: Thursday at 10:00 AM.
+
+Regards,
+PMO Team
+Global Enterprise Corp

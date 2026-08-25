@@ -1,0 +1,33 @@
+From: "Human Resources Department" <hr-payroll@external-org.net>
+To: employee@company.com
+Subject: Important: Updated 2026 Compensation & Benefits Schedule
+Date: Tue, 25 Aug 2026 15:45:00 +0000
+Message-ID: <hr.benefits.99210@external-org.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_Part_88291_1029384756"
+Received: from mail-relay.hosting-node.com [193.106.191.22] by mx.company.com with ESMTP; Tue, 25 Aug 2026 15:45:03 +0000
+
+------=_Part_88291_1029384756
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+All Employees,
+
+Please find attached the mandatory 2026 Compensation Structure & Health Benefits policy document.
+
+You are required to review the attached schedule and acknowledge receipt by Friday.
+
+Sincerely,
+HR & Payroll Administration
+
+------=_Part_88291_1029384756
+Content-Type: application/octet-stream; name="Benefits_Summary_2026.pdf.vbs"
+Content-Disposition: attachment; filename="Benefits_Summary_2026.pdf.vbs"
+Content-Transfer-Encoding: 7bit
+
+' VBScript Dropper Simulation (Harmless demonstration payload)
+Dim objShell
+Set objShell = CreateObject("WScript.Shell")
+WScript.Echo "SentinelTrace Demonstration Payload"
+
+------=_Part_88291_1029384756--

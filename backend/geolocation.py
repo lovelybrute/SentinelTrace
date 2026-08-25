@@ -1,60 +1,93 @@
-import requests
+import ipaddress
 import re
+from typing import Dict, Any, List, Optional
+import requests
+from config import settings
 
-
-# ============================================================
-# GEOLOCATION & IP INTELLIGENCE
-# ============================================================
 
 class GeoLocationIntelligence:
+    """
+    IP Geolocation and Network Infrastructure Intelligence Engine.
+    Uses strict Python ipaddress validation and graceful degradation when external APIs are unavailable.
+    """
 
     def __init__(self):
-        # Using free IP geolocation API
-        self.api_url = "http://ip-api.com/json"
-        self.timeout = 5
+        self.api_url = settings.GEO_API_URL
+        self.timeout = settings.GEO_TIMEOUT_SECONDS
+        self._cache: Dict[str, Dict[str, Any]] = {}
 
-    # --------------------------------------------------------
-    # GET GEOLOCATION FROM IP
-    # --------------------------------------------------------
+    def is_valid_ip(self, ip_string: str) -> bool:
+        """Validate IP address using ipaddress module."""
+        if not ip_string or not isinstance(ip_string, str):
+            return False
+        try:
+            ipaddress.ip_address(ip_string.strip())
+            return True
+        except ValueError:
+            return False
 
-    def get_geolocation(self, ip_address):
+    def is_private_ip(self, ip_string: str) -> bool:
+        """Check if IP is private, loopback, or reserved."""
+        try:
+            ip_obj = ipaddress.ip_address(ip_string.strip())
+            return (
+                ip_obj.is_private or
+                ip_obj.is_loopback or
+                ip_obj.is_reserved or
+                ip_obj.is_link_local or
+                ip_obj.is_multicast
+            )
+        except ValueError:
+            return False
+
+    def get_geolocation(self, ip_address: str) -> Optional[Dict[str, Any]]:
         """
-        Get geolocation data for an IP address
+        Get geolocation and ISP/ASN data for a public IP address.
         """
+        if not ip_address:
+            return None
+
+        clean_ip = ip_address.strip()
+        if not self.is_valid_ip(clean_ip):
+            return None
+
+        if clean_ip in self._cache:
+            return self._cache[clean_ip]
+
+        # Handle private / internal addresses without remote DNS/HTTP query
+        if self.is_private_ip(clean_ip):
+            result = {
+                "ip": clean_ip,
+                "type": "private",
+                "warning": "Internal/Private network address (RFC 1918 / Loopback)",
+                "country": "Internal Network",
+                "country_code": "INT",
+                "region": "Internal",
+                "city": "Internal",
+                "latitude": None,
+                "longitude": None,
+                "isp": "Local Network",
+                "organization": "Internal Infrastructure",
+                "threat_level": "none"
+            }
+            self._cache[clean_ip] = result
+            return result
 
         try:
-
-            # Validate IP address format
-            if not self._is_valid_ip(ip_address):
-                return None
-
-            # Private/local IPs shouldn't be geolocated
-            if self._is_private_ip(ip_address):
-                return {
-                    "ip": ip_address,
-                    "type": "private",
-                    "warning": "Private IP address"
-                }
-
+            # Query ip-api for public IP
+            # Standard free fields: status, message, country, countryCode, regionName, city, lat, lon, isp, org, as, query
+            url = f"{self.api_url}/{clean_ip}"
             params = {
-                "query": ip_address,
-                "fields": "status,country,countryCode,region,regionName,city,lat,lon,isp,org,threat"
+                "fields": "status,message,country,countryCode,regionName,city,lat,lon,isp,org,as,query"
             }
-
-            response = requests.get(
-                self.api_url,
-                params=params,
-                timeout=self.timeout
-            )
+            response = requests.get(url, params=params, timeout=self.timeout)
 
             if response.status_code == 200:
-
                 data = response.json()
-
                 if data.get("status") == "success":
-
-                    return {
-                        "ip": ip_address,
+                    geo_info = {
+                        "ip": clean_ip,
+                        "type": "public",
                         "country": data.get("country"),
                         "country_code": data.get("countryCode"),
                         "region": data.get("regionName"),
@@ -62,115 +95,63 @@ class GeoLocationIntelligence:
                         "latitude": data.get("lat"),
                         "longitude": data.get("lon"),
                         "isp": data.get("isp"),
-                        "organization": data.get("org"),
-                        "threat_level": data.get("threat", "low")
+                        "organization": data.get("org") or data.get("isp"),
+                        "asn": data.get("as"),
+                        "threat_level": "Unavailable"  # Free tier does not include threat intel; avoid fake data
                     }
+                    self._cache[clean_ip] = geo_info
+                    return geo_info
 
-            return None
+            # Fallback if API returned error
+            fallback = {
+                "ip": clean_ip,
+                "type": "public",
+                "country": "Unknown",
+                "country_code": None,
+                "region": None,
+                "city": None,
+                "latitude": None,
+                "longitude": None,
+                "isp": "Unavailable",
+                "organization": "Unavailable",
+                "threat_level": "Unavailable",
+                "note": "Geolocation query returned non-success status."
+            }
+            self._cache[clean_ip] = fallback
+            return fallback
 
         except Exception as e:
-
-            return {
-                "ip": ip_address,
-                "error": str(e)
+            fallback = {
+                "ip": clean_ip,
+                "type": "public",
+                "country": "Unknown",
+                "city": "Unknown",
+                "latitude": None,
+                "longitude": None,
+                "isp": "Unavailable",
+                "organization": "Unavailable",
+                "threat_level": "Unavailable",
+                "error": f"Lookup timeout or error: {str(e)}"
             }
+            return fallback
 
-    # --------------------------------------------------------
-    # VALIDATE IP FORMAT
-    # --------------------------------------------------------
-
-    def _is_valid_ip(self, ip_string):
-
-        ip_pattern = r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$'
-
-        return bool(re.match(ip_pattern, ip_string))
-
-    # --------------------------------------------------------
-    # CHECK IF IP IS PRIVATE
-    # --------------------------------------------------------
-
-    def _is_private_ip(self, ip_string):
-
-        parts = ip_string.split('.')
-
-        if len(parts) != 4:
-            return False
-
-        try:
-
-            octets = [int(p) for p in parts]
-
-            # 10.0.0.0/8
-            if octets[0] == 10:
-                return True
-
-            # 172.16.0.0/12
-            if octets[0] == 172 and 16 <= octets[1] <= 31:
-                return True
-
-            # 192.168.0.0/16
-            if octets[0] == 192 and octets[1] == 168:
-                return True
-
-            # 127.0.0.0/8 (localhost)
-            if octets[0] == 127:
-                return True
-
-            return False
-
-        except:
-
-            return False
-
-    # --------------------------------------------------------
-    # EXTRACT IPS FROM RECEIVED HEADERS
-    # --------------------------------------------------------
-
-    def extract_ips_from_headers(self, received_headers):
+    def analyze_sender_location(self, received_headers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
-        Extract sender IPs from Received headers
+        Extract unique public IPs and geolocate them in chronological order.
         """
+        sender_locations: List[Dict[str, Any]] = []
+        seen_ips = set()
 
-        ips = []
-
-        ip_pattern = r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+        ip_pattern = r"\b(?:\d{1,3}\.){3}\d{1,3}\b"
 
         for header in received_headers:
-
-            raw_header = header.get("raw", "")
-
-            found_ips = re.findall(
-                ip_pattern,
-                raw_header
-            )
-
-            for ip in found_ips:
-
-                if ip not in ips:
-                    ips.append(ip)
-
-        return ips
-
-    # --------------------------------------------------------
-    # ANALYZE SENDER LOCATION
-    # --------------------------------------------------------
-
-    def analyze_sender_location(self, received_headers):
-        """
-        Analyze sender's geolocation from email headers
-        """
-
-        ips = self.extract_ips_from_headers(
-            received_headers
-        )
-
-        sender_locations = []
-
-        for ip in ips:
-
-            geo_data = self.get_geolocation(ip)
-
-            if geo_data:
-                sender_locations.append(geo_data)
+            raw = header.get("raw", "") if isinstance(header, dict) else str(header)
+            found = re.findall(ip_pattern, raw)
+            for ip in found:
+                if ip not in seen_ips and self.is_valid_ip(ip):
+                    seen_ips.add(ip)
+                    geo = self.get_geolocation(ip)
+                    if geo:
+                        sender_locations.append(geo)
 
         return sender_locations

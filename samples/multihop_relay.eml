@@ -1,0 +1,19 @@
+From: "Customer Support Notification" <noreply@tracking-delivery-service.net>
+To: recipient@destination-org.com
+Subject: Package Delivery Attempt Failed - Reschedule Delivery
+Date: Tue, 25 Aug 2026 13:00:00 +0000
+Message-ID: <pkg.track.881920@tracking-delivery-service.net>
+Received: from internal-gateway.destination-org.com [192.168.10.5] by mailserver.destination-org.com with ESMTP id 99120; Tue, 25 Aug 2026 13:00:09 +0000
+Received: from edge-relay02.isp-transit.com [198.51.100.45] by internal-gateway.destination-org.com with ESMTPS; Tue, 25 Aug 2026 13:00:06 +0000
+Received: from anonymizer-node.vps-cloud.org [185.220.101.99] by edge-relay02.isp-transit.com with ESMTP; Tue, 25 Aug 2026 13:00:03 +0000
+Received: from workstation-node.local [10.200.1.15] by anonymizer-node.vps-cloud.org with ESMTP; Tue, 25 Aug 2026 13:00:01 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+
+Your parcel #DHL-88910 could not be delivered due to an incorrect shipping address.
+
+Please update your delivery address online within 48 hours to avoid returning to sender:
+http://tracking-delivery-service.net/reschedule-delivery?id=992819
+
+Tracking Department
+Logistics Dispatch Center

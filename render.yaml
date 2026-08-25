@@ -1,0 +1,20 @@
+# Render service definition (optional). When connecting the repo in Render you can
+# import this file to preconfigure the service. Replace placeholders in the
+# Render dashboard after import; do NOT store secrets here.
+services:
+  - type: web_service
+    name: sentineltrace-backend
+    env: python
+    plan: free
+    repo: https://github.com/lovelybrute/lovelybrute
+    branch: main
+    buildCommand: pip install -r ../requirements.txt
+    startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app
+    rootDir: backend
+    autoDeploy: true
+    disk: 1024
+    envVars:
+      - key: DATABASE_URL
+        scope: private
+      - key: ALLOWED_ORIGINS
+        scope: private

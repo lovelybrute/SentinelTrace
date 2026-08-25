@@ -1,0 +1,24 @@
+From: "Accounts Receivable" <billing@paypa1-security.com>
+To: procurement@victimcorp.com
+Reply-To: billing-settlement@paypa1-security.com
+Subject: Overdue Invoice Notification - Account Suspension Warning
+Date: Tue, 25 Aug 2026 11:30:00 +0000
+Message-ID: <inv.notify.883910@paypa1-security.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Received: from vps-node8.cloud-hosting.de [185.220.101.5] by mail.victimcorp.com with ESMTP; Tue, 25 Aug 2026 11:30:04 +0000
+
+Dear Customer,
+
+Your enterprise subscription invoice #INV-2026-9921 is past due. 
+
+Failure to remit the outstanding balance of $3,450 within 24 hours will result in immediate service suspension.
+
+Please review the remittance advice and pay online through our secure billing portal:
+http://185.220.101.5/billing/pay-invoice?token=89f9e8a71b
+
+Banking details have been updated for direct deposit transfers. Please do not send funds to previous banking coordinates.
+
+Sincerely,
+Financial Operations Team
+PayPal Services
