@@ -1,0 +1,24 @@
+Subject: Verify Your Account - Urgent Action Required
+From: support@bankingsecure.net
+To: user@example.com
+Date: Sat, 24 Aug 2026 10:30:00 +0000
+Message-ID: <verify.123456@bankingsecure.net>
+DKIM-Signature: v=1; a=rsa-sha256; d=bankingsecure.net; s=default; c=relaxed/relaxed; bh=abc123; b=xyz789;
+Authentication-Results: spf=pass dkim=pass
+Received: from mail.bankingsecure.net [192.168.1.100] by server.example.com with SMTP; 24 Aug 2026 10:30:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+Hello User,
+
+Your account has been flagged for suspicious activity. Please click the link below immediately to verify your identity:
+
+http://bit.ly/verify-account-now
+
+This action is urgent and must be completed within 24 hours to avoid account suspension.
+
+Do NOT reply to this email. Click the link above to verify.
+
+Best regards,
+Security Team

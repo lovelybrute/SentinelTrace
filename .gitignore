@@ -1,0 +1,35 @@
+.venv/
+.env
+.env.*
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+sentineltrace.db
+backend/sentineltrace.db
+*.db
+*.log
+node_modules/
+web/node_modules/
+web/dist/
+frontend/dist/
+/dist/
+.vscode/
+.idea/
+.DS_Store
+npm-debug.log
+yarn-error.log
+*.pem
+*.key
+*/.env
+
+# OS
+Thumbs.db
+ehthumbs.db
+
+# Editor
+*.swp
+*.swo
+

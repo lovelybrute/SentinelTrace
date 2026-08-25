@@ -1,0 +1,25 @@
+Subject: Meeting Tomorrow at 2PM
+From: john.smith@company.com
+To: team@company.com
+Date: Sat, 24 Aug 2026 16:45:00 +0000
+Message-ID: <meeting.555666@company.com>
+DKIM-Signature: v=1; a=rsa-sha256; d=company.com; s=default; c=relaxed/relaxed; bh=def456; b=abc999;
+Authentication-Results: spf=pass dkim=pass dmarc=pass
+Received: from mail.company.com [10.0.0.1] by server.company.com with SMTP; 24 Aug 2026 16:45:00 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+Hi Team,
+
+Just a quick reminder that we have our weekly sync meeting tomorrow at 2PM in the conference room.
+
+Topics to cover:
+- Project updates
+- Q3 planning
+- Budget review
+
+Please come prepared with your reports.
+
+Thanks,
+John
