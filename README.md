@@ -1,368 +1,184 @@
-# SentinelTrace AI - Email Threat Detection Platform
+# 🛡️ SENTINELTRACE — AI-Powered Email Threat Detection, Geolocation & Forensic Intelligence Platform
 
-**AI-Powered Email Threat Detection, Geolocation & Forensic Intelligence Platform**
-
-*Developed for Smart India Hackathon 2026 - Problem Statement: SIH26106*
-
----
-
-## 🎯 Overview
-
-SentinelTrace AI is a comprehensive email security platform that combines artificial intelligence, geolocation analysis, and advanced forensic intelligence to detect and analyze email threats in real-time.
-
-### Key Features
-
-✅ **Email Threat Detection**
-- Real-time threat scoring (0-100 scale)
-- Threat classification: LOW, MEDIUM, HIGH, CRITICAL
-- Risk factor identification and analysis
-- Malware and phishing detection
-
-✅ **Geolocation Intelligence**
-- Sender IP geolocation tracking
-- Country and city-level location analysis
-- IP reputation scoring
-- Threat-level assessment by region
-
-✅ **Advanced Email Forensics**
-- DKIM signature validation
-- SPF record verification
-- DMARC policy analysis
-- Email header chain analysis
-- Spoofing attempt detection
-- Sender authentication validation
-
-✅ **Artifact Extraction**
-- URL extraction and analysis
-- IP address identification
-- Email address discovery
-- Attachment analysis and hashing
-
-✅ **Historical Analysis & Analytics**
-- Email analysis storage in SQLite database
-- Threat statistics and reports
-- Threat trends by geography
-- Recent high-threat email tracking
+> **Smart India Hackathon 2026** — Problem Statement ID: **SIH26106**  
+> **Organization**: All India Council for Technical Education (AICTE) — Cyber Security Cell  
+> **Category**: Software | **Theme**: Blockchain & Cybersecurity  
 
 ---
 
-## 🚀 Quick Start
+## 🌐 Live Platform Overview
 
-### Prerequisites
+SentinelTrace is an enterprise-grade cyber digital forensics and threat intelligence platform built for SOC analysts, incident response teams, and forensic investigators.
 
-- Python 3.8+
-- pip package manager
-- Virtual environment (recommended)
+Combining **RFC-compliant protocol verification**, **cryptographic chain-of-custody tracking**, **machine learning classification**, **3D infrastructure visualizations**, and an **AI investigation copilot**, SentinelTrace provides full lifecycle email threat analysis from raw RFC 5322 MIME ingestion to OASIS STIX 2.1 threat intelligence export.
 
-### Installation
+---
 
-1. **Activate Virtual Environment**
-   ```bash
-   # Windows PowerShell
-   .\.venv\Scripts\Activate.ps1
-   
-   # Linux/Mac
-   source .venv/bin/activate
-   ```
+## ⚡ Key Highlights & Technical Differentiators
 
-2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+| Forensic Domain | Implementation Details |
+|---|---|
+| **RFC Authentication** | Pure RFC 7208 (SPF), RFC 6376 (DKIM with DNS selector keys), and RFC 7489 (DMARC strict/relaxed alignment). **Zero fake PASS badges**. |
+| **Relay Timeline** | Top-down SMTP Received: header parsing into reverse chronological order, filtering RFC 1918 internal subnets to find the earliest public external gateway. |
+| **Origin Intelligence** | Classifies infrastructure (Corporate, Cloud, VPS, VPN, Open Relay) with **3D Interactive Cyber Globe** and honest ISP datacenter attribution. |
+| **Brand Protection** | Damerau-Levenshtein distance, character substitutions (`0` for `o`, `rn` for `m`), and IDN homoglyph punycode detection. |
+| **BEC Detection** | 7-category classifier (Executive Impersonation, Invoice Fraud, Payment Diversion, Payroll, Wire Transfers, Gift Cards, Credential Harvesting). |
+| **Safe Static Analysis** | Magic-byte MIME checks, executable double-extension detection (`.pdf.exe`), SSRF-protected URL analysis, and SHA-256/SHA-512 evidence hashing. |
+| **Explainable ML** | Gradient Boosting classifier with transparent factor weights (+12 SPF mismatch, +15 Reply-To divergence, +18 lookalike domain). |
+| **Threat Sharing** | Automated MITRE ATT&CK matrix mapping (T1566, T1598) and standardized OASIS STIX 2.1 JSON bundle exporter. |
+| **Investigation UX** | 3D Hero Network, 3D Entity Graph, AI Investigation Copilot Drawer, and Universal Command Palette (`Ctrl + K`). |
 
-3. **Initialize Database**
-   ```bash
-   cd backend
-   python -c "from database import init_db; init_db()"
-   ```
+---
 
-### Running the Application
+## 🏗️ Architecture
 
-#### Start Backend Server
-```bash
-cd backend
-python main.py
+```
+                                  [ Incoming .EML File ]
+                                             │
+                                             ▼
+                               ┌───────────────────────────┐
+                               │  EmailForensicParser      │
+                               │  - RFC 5322 MIME Parser   │
+                               │  - SHA-256 / SHA-512 Hash │
+                               └─────────────┬─────────────┘
+                                             │
+               ┌─────────────────────────────┼─────────────────────────────┐
+               ▼                             ▼                             ▼
+   ┌───────────────────────┐   ┌───────────────────────────┐   ┌───────────────────────┐
+   │  RFC Authentication   │   │  MTA Relay Chain Forensics│   │  Artifact Extractors  │
+   │  - SPFEvaluator       │   │  - ReceivedHeaderParser   │   │  - AttachmentAnalyzer │
+   │  - DKIMVerifier       │   │  - OriginAnalyzer         │   │  - SSRF-Safe URLAnalyzer│
+   │  - DMARCAnalyzer      │   │  - 3D Geolocation Globe   │   │  - IOCExtractor (IPv4/6)│
+   └───────────┬───────────┘   └─────────────┬─────────────┘   └───────────┬───────────┘
+               │                             │                             │
+               └─────────────────────────────┼─────────────────────────────┘
+                                             │
+                                             ▼
+                               ┌───────────────────────────┐
+                               │  Specialized Threat AI    │
+                               │  - BECDetector (7 Classes)│
+                               │  - LookalikeDetector      │
+                               │  - Gradient Boosting ML   │
+                               └─────────────┬─────────────┘
+                                             │
+                                             ▼
+                               ┌───────────────────────────┐
+                               │  Explainable Threat Score │
+                               │  - Rule (35%)             │
+                               │  - ML Classifier (40%)    │
+                               │  - Reputation (15%)       │
+                               │  - Campaign Clusters (10%)│
+                               └─────────────┬─────────────┘
+                                             │
+               ┌─────────────────────────────┼─────────────────────────────┐
+               ▼                             ▼                             ▼
+   ┌───────────────────────┐   ┌───────────────────────────┐   ┌───────────────────────┐
+   │  MITRE ATT&CK Mapper  │   │  OASIS STIX 2.1 Bundles   │   │  SOC Case Management  │
+   │  T1566, T1598, T1204  │   │  Standardized JSON Feed   │   │  Audit Logs & Reports │
+   └───────────────────────┘   └───────────────────────────┘   └───────────────────────┘
 ```
 
-The API server will start at `http://localhost:8000`
+---
 
-**API Documentation**: `http://localhost:8000/docs` (Interactive Swagger UI)
+## 🚀 Quick-Start Guide
 
-#### Open Frontend Dashboard
-1. Open your web browser
-2. Navigate to `frontend/index.html` or serve with a simple HTTP server:
-   ```bash
-   python -m http.server 8080
-   ```
-3. Open `http://localhost:8080/frontend/`
+### 1. Prerequisites
+- **Python 3.10+**
+- **Node.js 18+** & **npm**
+
+### 2. Start Backend API Server
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Start FastAPI backend
+python backend/main.py
+# API active on http://localhost:8000
+# Swagger UI Docs: http://localhost:8000/docs
+```
+
+### 3. Start React 18 SOC Dashboard
+```bash
+cd web
+npm install
+npm run dev
+# Dashboard active on http://localhost:5173
+```
 
 ---
 
-## 📋 API Endpoints
+## 🧪 Test Suite & Quality Assurance
 
-### Analysis Endpoints
+### Run Complete Automated Test Suite
+```bash
+# Run 19/19 pytest backend unit tests
+python -m pytest backend/tests/ -v
 
-#### **POST /analyze**
-Upload and analyze an email file
-- **Input**: .eml email file
-- **Response**: Comprehensive threat analysis including geolocation, forensics, and threat score
+# Run End-to-End API smoke test
+python backend/tests/test_e2e_smoke.py
 
-#### **GET /analysis/{analysis_id}**
-Retrieve detailed analysis result by ID
-- **Parameters**: `analysis_id` (integer)
-- **Response**: Full analysis data for specific email
+# Run frontend TypeScript typecheck
+cd web && npm run typecheck
 
-### Analytics & Reporting
-
-#### **GET /stats**
-Get overall threat statistics
-- **Response**: 
-  - Total emails analyzed
-  - Flagged emails count
-  - Critical threats
-  - High threats
-  - Average threat score
-  - Flagged percentage
-
-#### **GET /recent-threats?limit=10**
-Get recent high-threat emails
-- **Parameters**: `limit` (optional, default: 10)
-- **Response**: List of flagged emails with threat data
-
-#### **GET /threat-by-country**
-Get threat distribution by sender country
-- **Response**: List of countries with email count and average threat score
-
-### Health Check
-
-#### **GET /**
-Health check endpoint
-- **Response**: Server status and version information
+# Run production build
+cd web && npm run build
+```
 
 ---
 
-## 🏗️ Project Structure
+## 📂 Repository Layout
 
 ```
 SIH26106_SentinelTrace/
 ├── backend/
-│   ├── main.py                    # FastAPI application & endpoints
-│   ├── email_parser.py            # Email parsing & basic forensics
-│   ├── geolocation.py             # IP geolocation intelligence
-│   ├── threat_intelligence.py     # Threat scoring engine
-│   ├── advanced_forensics.py      # Advanced email forensics (DKIM, SPF, DMARC)
-│   ├── database.py                # SQLAlchemy database models
-│   └── sentineltrace.db           # SQLite database (auto-created)
+│   ├── main.py                   # FastAPI Application & REST Endpoints
+│   ├── config.py                 # Central Configuration
+│   ├── database.py               # SQLAlchemy ORM (Cases, Evidence, IOCs, Campaigns, Audit)
+│   ├── email_parser.py           # RFC 5322 Ingestion, MIME & Header Parser
+│   ├── advanced_forensics.py     # Forensic Pipeline Orchestrator
+│   ├── spf_evaluator.py          # RFC 7208 SPF Engine
+│   ├── dkim_verifier.py          # RFC 6376 DKIM Cryptographic Verifier
+│   ├── dmarc_analyzer.py         # RFC 7489 DMARC Policy Alignment Engine
+│   ├── received_parser.py        # SMTP Received-Chain Timeline Engine
+│   ├── origin_analyzer.py        # Origin Infrastructure Assessment
+│   ├── bec_detector.py           # 7-Category Business Email Compromise Classifier
+│   ├── lookalike_detector.py     # Typosquatting & Homoglyph Engine
+│   ├── attachment_analyzer.py    # Safe Static Attachment Security Engine
+│   ├── url_analyzer.py           # SSRF-Protected URL Analyzer
+│   ├── ml_engine.py              # Gradient Boosting Threat Classifier
+│   ├── threat_scorer.py          # Explainable Hybrid Threat Scoring (0-100)
+│   ├── campaign_correlator.py    # Multi-Email Infrastructure Clusterer
+│   ├── mitre_mapper.py           # MITRE ATT&CK Matrix Mapper
+│   ├── stix_exporter.py          # OASIS STIX 2.1 JSON Bundle Generator
+│   ├── report_generator.py       # HTML, JSON & PDF Forensic Report Builder
+│   └── tests/                    # 19 Pytest & E2E Test Suite (100% Passing)
 │
-├── frontend/
-│   └── index.html                 # Interactive web dashboard
+├── web/                          # React 18 + TypeScript + Three.js + Tailwind SOC
+│   └── src/
+│       ├── components/
+│       │   ├── 3d/               # Three.js 3D Hero Network, Globe & Threat Graph
+│       │   └── shell/            # TopBar, Sidebar, AI Copilot & Command Palette
+│       ├── pages/                # 14 Dedicated Forensic Interfaces
+│       │   ├── Landing.tsx       # 3D Hero & 7-Phase Storytelling Page
+│       │   ├── Dashboard.tsx     # SOC Overview & Live Threat Stream
+│       │   ├── EmailAnalyzer.tsx # 14-Stage Ingestion Pipeline & Explainable Scoring
+│       │   ├── HeaderForensics.tsx # RFC Header & Identity Divergence Analyzer
+│       │   ├── RelayChain.tsx    # Interactive MTA Hop Timeline
+│       │   ├── OriginTrace.tsx   # 3D Geolocation Globe & Datacenter Meta
+│       │   ├── GraphInvestigation.tsx # 3D / 2D Force-Directed Threat Graph
+│       │   ├── CampaignIntelligence.tsx # Multi-Email Campaign Clusterer
+│       │   ├── CaseManagement.tsx # SOC Case Workflow & Chain of Custody
+│       │   └── ForensicReports.tsx # Exportable Investigation Reports
+│       └── services/             # Typed API Client & Wire Schema Layer
 │
-├── models/                        # ML models (for future enhancement)
-├── data/                          # Sample data
-├── samples/                       # Sample emails for testing
-│
-└── README.md                      # This file
+├── samples/                      # 9 Real-World Forensic Sample Attack Vectors (.eml)
+├── SIH_REQUIREMENT_MAPPING.md    # Judge-Facing Requirement Traceability Matrix
+├── SIH_SUBMISSION.md             # Complete Hackathon Submission Document
+└── requirements.txt              # Production Python Dependencies
 ```
 
 ---
 
-## 🔍 How It Works
+## ⚖️ Forensic Disclaimer
 
-### Email Analysis Pipeline
-
-1. **File Upload** → User uploads .eml file
-2. **Email Parsing** → Extract headers, body, attachments
-3. **Geolocation** → Identify sender location from IP address
-4. **Threat Scoring** → AI-based threat analysis
-5. **Forensics** → Validate authentication (DKIM, SPF, DMARC)
-6. **Spoofing Check** → Detect impersonation attempts
-7. **Database Storage** → Save analysis results
-8. **Response** → Return comprehensive threat report
-
-### Threat Scoring Factors
-
-The platform evaluates multiple factors:
-
-- **Phishing Indicators** (up to 30 points)
-  - Urgent/action keywords in subject
-  - URL shorteners in email body
-  - Mismatched sender domains
-  
-- **Attachment Risk** (up to 30 points)
-  - Dangerous file types (.exe, .bat, .zip, etc.)
-  - Large file sizes
-  - Multiple attachments
-  
-- **URL Risk** (up to 25 points)
-  - IP-based URLs
-  - Very long URLs (obfuscation)
-  - URL encoding patterns
-  
-- **Sender Reputation** (up to 25 points)
-  - Generic sender names
-  - Missing DKIM signatures
-  - High-threat sender IP locations
-
----
-
-## 💾 Database Schema
-
-### EmailAnalysis Table
-Stores complete email analysis records
-- Email metadata (sender, recipient, subject)
-- Threat assessment results
-- Geolocation data
-- Artifact counts
-- Full analysis JSON
-
-### ThreatAlert Table
-Tracks identified threats for reporting
-- Threat type classification
-- Severity levels
-- Associated email analysis
-
-### SenderReputation Table
-Caches sender reputation scores
-- Email address tracking
-- Reputation scoring
-- Historical data
-
----
-
-## 🔐 Security Features
-
-✓ **Email Authentication Validation**
-- DKIM signature verification
-- SPF record checking
-- DMARC policy validation
-
-✓ **Spoofing Detection**
-- Sender domain verification
-- Header chain analysis
-- Email address inconsistency detection
-
-✓ **Threat Intelligence**
-- Phishing pattern recognition
-- Malware indicators
-- Suspicious attachment detection
-
-✓ **IP Reputation Scoring**
-- Geolocation-based analysis
-- Threat level assessment
-- Regional threat tracking
-
----
-
-## 📊 Threat Levels
-
-| Level | Score | Description |
-|-------|-------|-------------|
-| **LOW** | 0-24 | Safe email, minimal risk |
-| **MEDIUM** | 25-49 | Some suspicious indicators present |
-| **HIGH** | 50-74 | Multiple threat factors detected |
-| **CRITICAL** | 75-100 | Highly suspicious, likely malicious |
-
----
-
-## 🧪 Testing
-
-### Test with Sample Email
-
-1. Create a test `.eml` file or use a sample
-2. Upload via Frontend Dashboard or API:
-   ```bash
-   curl -X POST "http://localhost:8000/analyze" \
-     -F "file=@sample.eml"
-   ```
-
-### View Analysis
-- Access dashboard at `http://localhost:8080/frontend/`
-- Check statistics at `http://localhost:8000/stats`
-- View recent threats at `http://localhost:8000/recent-threats`
-
----
-
-## 🌐 Geolocation Data
-
-The platform uses the IP-API.com service for geolocation:
-- Country and region identification
-- City-level location data
-- ISP/Organization information
-- Threat level assessment
-
-*Note: Requires internet connection for IP lookups*
-
----
-
-## 📈 Analytics & Reporting
-
-Access comprehensive statistics:
-
-1. **Overall Stats** → `/stats`
-2. **Recent High-Threat Emails** → `/recent-threats`
-3. **Threat Distribution by Country** → `/threat-by-country`
-4. **Detailed Analysis** → `/analysis/{id}`
-
----
-
-## 🛠️ Future Enhancements
-
-- [ ] Machine learning model for threat prediction
-- [ ] Real-time email stream processing
-- [ ] Multi-language support
-- [ ] Advanced visualization dashboard (React)
-- [ ] Email server integration (IMAP/POP3)
-- [ ] Threat intelligence feed integration
-- [ ] Custom threat rules engine
-- [ ] API key authentication
-- [ ] User authentication & role-based access
-- [ ] Bulk email analysis
-- [ ] Mobile app
-
----
-
-## 📝 Dependencies
-
-```
-fastapi==0.104.0
-uvicorn==0.24.0
-python-multipart==0.0.6
-sqlalchemy==2.0.0
-requests==2.31.0
-dnspython==2.4.0
-email-validator==2.1.0
-geoip2==4.7.0
-```
-
-Install all with:
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 🤝 Contributing
-
-For Smart India Hackathon 2026 - SIH26106
-
-Submit improvements and enhancements to enhance email security and threat detection capabilities.
-
----
-
-## 📞 Support
-
-For issues or questions:
-1. Check API documentation at `http://localhost:8000/docs`
-2. Review error messages in console output
-3. Ensure all dependencies are installed correctly
-4. Verify .eml file format is valid
-
----
-
-## 📄 License
-
-Developed for Smart India Hackathon 2026
-
----
-
-**SentinelTrace AI - Securing Email Communications with Intelligence** 🛡️
+Geolocation coordinates indicate **observed network mail transfer agents (MTAs) and intermediary proxy infrastructure**. Geolocation data does not establish the physical location of human threat actors. Attribution of human operators requires ISP warrant logs and law enforcement corroboration.

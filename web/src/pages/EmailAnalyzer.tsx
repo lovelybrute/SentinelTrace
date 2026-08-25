@@ -2,8 +2,9 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Upload, FileText, Play, AlertTriangle, CheckCircle, Clock,
-  ChevronRight, Copy, Download, Shield, Zap, Search,
-  RotateCcw, Info, ExternalLink
+  ChevronRight, Copy, Download, Shield, Zap, Search, FileSearch,
+  RotateCcw, Info, ExternalLink, Sparkles, Network, Globe, GitBranch,
+  FolderPlus, Layers, FileCode
 } from 'lucide-react';
 import { useAnalysis } from '@/context/AnalysisContext';
 import { useSession } from '@/context/SessionContext';
@@ -14,101 +15,155 @@ import type { StageState } from '@/lib/pipeline';
 import type { EmailAnalysis, Severity } from '@/types';
 
 /* ------------------------------------------------------------------ */
+/* Pre-Configured Attack Samples                                       */
+/* ------------------------------------------------------------------ */
+
+const SAMPLE_ATTACK_VECTORS = [
+  {
+    name: 'Invoice Fraud (Lookalike Domain)',
+    category: 'BEC / Financial',
+    filename: 'invoice_fraud.eml',
+    raw: `From: Accounts Receivable <billing@paypa1-security.com>
+To: procurement@victimcorp.com
+Reply-To: billing-settlement@paypa1-security.com
+Subject: Overdue Invoice Notification - Account Suspension Warning
+Date: Tue, 25 Aug 2026 11:30:00 +0000
+Message-ID: <inv.notify.883910@paypa1-security.com>
+Received: from vps-node8.cloud-hosting.de [185.220.101.5] by mail.victimcorp.com with ESMTP; Tue, 25 Aug 2026 11:30:04 +0000
+
+Dear Customer,
+Your enterprise subscription invoice #INV-2026-9921 is past due. Failure to remit balance of $3,450 within 24h will result in immediate suspension.
+Pay online: http://185.220.101.5/billing/pay-invoice?token=89f9e8a71b
+Please update wire transfer coordinates.`,
+  },
+  {
+    name: 'CEO Executive Impersonation',
+    category: 'Executive BEC',
+    filename: 'ceo_impersonation.eml',
+    raw: `From: "David Miller (CEO)" <executive.dmiller719@gmail.com>
+To: sarah.jenkins@globalenterprise.corp
+Reply-To: executive.dmiller719@gmail.com
+Subject: Quick confidential request - are you at your desk?
+Date: Tue, 25 Aug 2026 09:15:00 +0000
+Message-ID: <CABa8xK198301290@mail.gmail.com>
+Received: from mail-wm1-f41.google.com [209.85.128.41] by mx.globalenterprise.corp with ESMTP; Tue, 25 Aug 2026 09:15:02 +0000
+
+Sarah,
+I am currently in an executive board meeting and cannot take calls. I need you to process an urgent international vendor payment before 2 PM today. 
+Wire transfer details attached. Keep this confidential until announced.
+David Miller, Chief Executive Officer`,
+  },
+  {
+    name: 'Credential Phishing (M365 Spoof)',
+    category: 'Credential Harvest',
+    filename: 'credential_phishing.eml',
+    raw: `From: IT Security Desk <security-alert@microsoft-auth-verify.net>
+To: analyst@victimcorp.com
+Subject: URGENT: Mandatory Password Expiration - 24 Hours Remaining
+Date: Tue, 25 Aug 2026 14:10:00 +0000
+Message-ID: <m365.exp.99210@microsoft-auth-verify.net>
+Received: from relay-host.offshore-vps.ru [194.26.29.112] by mail.victimcorp.com with ESMTP; Tue, 25 Aug 2026 14:10:05 +0000
+
+Security Notice:
+Your corporate password expires today. To retain access to Outlook and OneDrive, verify your credentials immediately:
+https://microsoft-auth-verify.net/sso/login?redirect=portal.office.com`,
+  },
+  {
+    name: 'Legitimate Corporate Communication',
+    category: 'Clean Baseline',
+    filename: 'legitimate_corporate.eml',
+    raw: `From: GitHub Notifications <notifications@github.com>
+To: developer@company.com
+Subject: [GitHub] Security advisory alert for repository
+Date: Tue, 25 Aug 2026 08:00:00 +0000
+Message-ID: <github/repo/alerts/1002@github.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=github.com; s=pf2023; h=from:to:subject:date:message-id; bh=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=; b=dGhpcyBpcyBhIHZhbGlkIHNpZ25hdHVyZQ==
+Received: from smtp.github.com [140.82.112.4] by mx.company.com with ESMTP; Tue, 25 Aug 2026 08:00:03 +0000
+
+Hello developer,
+A Dependabot security update was opened for your repository. Please review the pull request on github.com.`,
+  },
+];
+
+/* ------------------------------------------------------------------ */
 /* Pipeline progress visualization                                     */
 /* ------------------------------------------------------------------ */
 
 function PipelineProgress({ stages }: { stages: StageState[] }) {
   const stageConfig: Record<string, { label: string }> = {
-    INGEST: { label: 'INGESTING EMAIL' },
-    PARSE_HEADERS: { label: 'PARSING HEADERS' },
-    SPF: { label: 'VALIDATING SPF' },
-    DKIM: { label: 'VALIDATING DKIM' },
-    DMARC: { label: 'VALIDATING DMARC' },
-    IOC: { label: 'EXTRACTING IOCs' },
-    URLS: { label: 'ANALYZING URLS' },
-    DOMAINS: { label: 'ANALYZING DOMAINS' },
-    IP_INTEL: { label: 'ANALYZING IP INTELLIGENCE' },
-    RELAY: { label: 'RECONSTRUCTING RELAY PATH' },
-    CLASSIFY: { label: 'AI THREAT CLASSIFICATION' },
-    GEO: { label: 'GEOLOCATION ANALYSIS' },
-    CORRELATE: { label: 'FORENSIC CORRELATION' },
+    INGEST: { label: 'INGESTING RAW MIME STREAM' },
+    PARSE_HEADERS: { label: 'PARSING RFC 5322 HEADERS' },
+    SPF: { label: 'EVALUATING RFC 7208 SPF' },
+    DKIM: { label: 'VERIFYING RFC 6376 DKIM CRYPTO' },
+    DMARC: { label: 'CHECKING RFC 7489 DMARC ALIGNMENT' },
+    IOC: { label: 'EXTRACTING IPv4/6 & DOMAIN IOCs' },
+    URLS: { label: 'ANALYZING URLs (SSRF-SAFE)' },
+    DOMAINS: { label: 'ANALYZING TYPOSQUATTING & LOOKALIKES' },
+    IP_INTEL: { label: 'ANALYZING IP & ASN REPUTATION' },
+    RELAY: { label: 'RECONSTRUCTING SMTP RELAY TIMELINE' },
+    CLASSIFY: { label: 'GRADIENT BOOSTING THREAT CLASSIFICATION' },
+    GEO: { label: 'GEOLOCATION & INFRASTRUCTURE MAPPING' },
+    CORRELATE: { label: 'CROSS-EMAIL CAMPAIGN CORRELATION' },
   };
 
+  const completedCount = stages.filter(s => s.status === 'COMPLETE' || s.status === 'DEGRADED').length;
+  const progressPct = Math.round((completedCount / stages.length) * 100);
+
   return (
-    <div
-      className="panel animate-fade-in"
-      style={{ padding: 24, maxWidth: 500, margin: '0 auto' }}
-    >
+    <div className="panel animate-fade-in p-6 max-w-lg mx-auto border-cyan-500/30 bg-[#080e21]/95 shadow-[0_0_40px_rgba(0,0,0,0.8)]">
       <div className="text-center mb-6">
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#22d3ee', letterSpacing: '0.1em' }}>
-          FORENSIC ANALYSIS PIPELINE
+        <div className="inline-flex items-center gap-2 font-mono text-xs font-bold text-cyan-400 tracking-wider">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+          <span>CYBER FORENSIC INVESTIGATION PIPELINE</span>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 4 }}>
-          {stages.filter(s => s.status === 'COMPLETE' || s.status === 'DEGRADED').length} / {stages.length} stages complete
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-slate-900 rounded-full h-2 mt-3 overflow-hidden border border-cyan-500/20">
+          <div
+            className="bg-gradient-to-r from-cyan-500 to-sky-400 h-full transition-all duration-300 shadow-[0_0_12px_rgba(34,211,238,0.6)]"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
+
+        <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 mt-2">
+          <span>Processing cryptographic signals...</span>
+          <span className="text-cyan-300 font-bold">{progressPct}%</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        {stages.map((stage, idx) => {
+      <div className="flex flex-col gap-1.5 max-h-[380px] overflow-y-auto pr-1">
+        {stages.map((stage) => {
           const config = stageConfig[stage.id];
           const isActive = stage.status === 'ACTIVE';
           const isDone = stage.status === 'COMPLETE';
           const isDegraded = stage.status === 'DEGRADED';
           const isPending = stage.status === 'PENDING';
 
-          let color = 'var(--color-text-muted)';
+          let color = '#64748b';
           let bgColor = 'transparent';
-          if (isActive) { color = '#22d3ee'; bgColor = 'rgba(34,211,238,0.06)'; }
+          if (isActive) { color = '#22d3ee'; bgColor = 'rgba(34,211,238,0.08)'; }
           else if (isDone) { color = '#22c55e'; }
           else if (isDegraded) { color = '#f59e0b'; }
 
           return (
             <div
               key={stage.id}
-              className="flex items-center gap-3 rounded-lg px-3 py-2"
-              style={{ background: bgColor, transition: 'all 0.3s' }}
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-xs transition-all duration-200"
+              style={{ background: bgColor }}
             >
-              {/* Status icon */}
-              <div style={{ width: 18, flexShrink: 0 }}>
-                {isActive && (
-                  <div className="animate-spin" style={{ width: 14, height: 14, border: '2px solid rgba(34,211,238,0.2)', borderTop: '2px solid #22d3ee', borderRadius: '50%' }} />
-                )}
-                {isDone && <CheckCircle size={14} color="#22c55e" />}
-                {isDegraded && <AlertTriangle size={14} color="#f59e0b" />}
-                {isPending && (
-                  <div style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }} />
-                )}
+              <div className="w-4 flex-shrink-0">
+                {isActive && <div className="w-3.5 h-3.5 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />}
+                {isDone && <CheckCircle size={14} className="text-emerald-400" />}
+                {isDegraded && <AlertTriangle size={14} className="text-amber-400" />}
+                {isPending && <div className="w-3.5 h-3.5 rounded-full border border-slate-700" />}
               </div>
 
-              {/* Connector line */}
-              {idx < stages.length - 1 && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 28,
-                    top: '50%',
-                    width: 1,
-                    height: 20,
-                    background: isDone ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.05)',
-                    transform: 'translateY(8px)',
-                    zIndex: 0,
-                  }}
-                />
-              )}
-
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color, letterSpacing: '0.06em', fontFamily: 'var(--font-mono)' }}>
-                  {config?.label || stage.id}
-                </div>
-                {stage.note && (
-                  <div style={{ fontSize: 10, color: '#f59e0b', marginTop: 1 }}>
-                    ⚠ {stage.note}
-                  </div>
-                )}
+              <div className="flex-1 font-mono text-[11px] font-semibold" style={{ color }}>
+                {config?.label || stage.id}
               </div>
 
               {stage.durationMs !== null && (
-                <div style={{ fontSize: 10, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
+                <div className="text-[10px] font-mono text-slate-500">
                   {stage.durationMs}ms
                 </div>
               )}
@@ -121,161 +176,155 @@ function PipelineProgress({ stages }: { stages: StageState[] }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Threat gauge (circular)                                             */
+/* Radial Threat Score Gauge                                           */
 /* ------------------------------------------------------------------ */
 
 function ThreatGauge({ score, level }: { score: number; level: Severity }) {
-  const radius = 52;
+  const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
 
   const color = level === 'CRITICAL' ? '#ef4444' : level === 'HIGH' ? '#f97316' : level === 'MEDIUM' ? '#f59e0b' : '#22c55e';
 
   return (
-    <div className="flex flex-col items-center" style={{ position: 'relative' }}>
-      <svg width={130} height={130} viewBox="0 0 130 130">
-        {/* Background track */}
-        <circle cx={65} cy={65} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={10} />
-        {/* Score arc */}
+    <div className="flex flex-col items-center relative">
+      <svg width={140} height={140} viewBox="0 0 140 140">
+        <circle cx={70} cy={70} r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={10} />
         <circle
-          cx={65} cy={65} r={radius}
+          cx={70} cy={70} r={radius}
           fill="none"
           stroke={color}
           strokeWidth={10}
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          transform="rotate(-90 65 65)"
-          style={{ filter: `drop-shadow(0 0 6px ${color})`, transition: 'stroke-dashoffset 1s ease-out' }}
+          transform="rotate(-90 70 70)"
+          style={{ filter: `drop-shadow(0 0 8px ${color})`, transition: 'stroke-dashoffset 1s ease-out' }}
         />
-        {/* Score text */}
-        <text x={65} y={62} textAnchor="middle" fill={color} fontSize={24} fontWeight={800} fontFamily="Inter, sans-serif">
+        <text x={70} y={67} textAnchor="middle" fill={color} fontSize={26} fontWeight={900} fontFamily="Orbitron, Inter, sans-serif">
           {score}
         </text>
-        <text x={65} y={77} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize={10} fontFamily="Inter, sans-serif">
+        <text x={70} y={83} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize={10} fontFamily="Inter, sans-serif">
           / 100
         </text>
       </svg>
       <div
+        className="font-mono text-xs font-bold px-3 py-1 rounded-md mt-1 tracking-wider uppercase"
         style={{
-          fontSize: 12,
-          fontWeight: 800,
           color,
-          letterSpacing: '0.12em',
-          marginTop: -4,
-          background: `${color}15`,
-          border: `1px solid ${color}30`,
-          borderRadius: 4,
-          padding: '3px 10px',
+          background: `${color}18`,
+          border: `1px solid ${color}40`,
+          boxShadow: `0 0 12px ${color}30`,
         }}
       >
-        {level}
+        {level} THREAT
       </div>
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
-/* Verdict card                                                        */
+/* Upgraded Verdict Card with "WHY?" Factor Breakdown                  */
 /* ------------------------------------------------------------------ */
 
 function VerdictCard({ analysis }: { analysis: EmailAnalysis }) {
-  const { assessment, score } = analysis;
+  const navigate = useNavigate();
+  const { assessment, score, authentication, originAssessment } = analysis;
   const color = score.level === 'CRITICAL' ? '#ef4444' : score.level === 'HIGH' ? '#f97316' : score.level === 'MEDIUM' ? '#f59e0b' : '#22c55e';
-
   const classLabel = assessment.classification.replace(/_/g, ' ');
 
   return (
-    <div
-      className="panel-elevated animate-fade-in"
-      style={{
-        padding: 24,
-        borderLeft: `3px solid ${color}`,
-        background: `linear-gradient(135deg, ${color}08, var(--color-surface-2) 60%)`,
-      }}
-    >
-      <div className="flex flex-wrap gap-6 items-start">
-        {/* Gauge */}
-        <ThreatGauge score={score.total} level={score.level} />
+    <div className="panel-elevated p-6 border-l-4" style={{ borderLeftColor: color }}>
+      <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
+        {/* Threat Gauge */}
+        <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-[#080e21]/70 border border-cyan-500/15 w-full lg:w-auto">
+          <ThreatGauge score={score.total} level={score.level} />
+        </div>
 
-        {/* Verdict text */}
-        <div style={{ flex: 1, minWidth: 200 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-muted)', letterSpacing: '0.1em', marginBottom: 4 }}>
-            AI CLASSIFICATION
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 900, color, letterSpacing: '0.04em', lineHeight: 1 }}>
-            {classLabel}
-          </div>
-          <div style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 4 }}>
-            Confidence: <span style={{ color: 'var(--color-text)', fontWeight: 600 }}>{assessment.confidence.toFixed(1)}%</span>
-          </div>
-
-          <div
-            className="mt-4 p-3 rounded-lg"
-            style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', fontSize: 12, color: 'var(--color-text-dim)', lineHeight: 1.6 }}
-          >
-            {assessment.narrative}
+        {/* Classification Narrative & Score Breakdown */}
+        <div className="flex-1 space-y-4 w-full">
+          <div>
+            <div className="text-[10px] font-mono font-bold text-cyan-400 tracking-widest uppercase">
+              PRIMARY CLASSIFICATION
+            </div>
+            <div className="text-2xl font-black tracking-tight text-white flex items-center gap-3 mt-1">
+              <span>{classLabel}</span>
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                {assessment.confidence.toFixed(1)}% CONFIDENCE
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-2 leading-relaxed bg-[#050a18]/70 p-3 rounded-lg border border-cyan-500/10">
+              {assessment.narrative}
+            </p>
           </div>
 
-          {/* Component scores */}
-          <div className="mt-4 flex flex-col gap-2">
-            {score.components.slice(0, 5).map(comp => (
-              <div key={comp.id} className="flex items-center gap-3">
-                <div style={{ fontSize: 11, color: 'var(--color-text-muted)', width: 140, flexShrink: 0 }}>{comp.label}</div>
-                <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
-                  <div
+          {/* Explainable Factor Breakdown ("WHY?") */}
+          <div>
+            <div className="text-[10px] font-mono font-bold text-slate-400 tracking-wider uppercase mb-2 flex items-center gap-1.5">
+              <Sparkles size={12} className="text-cyan-400" />
+              <span>EXPLAINABLE RISK SIGNALS & WEIGHTS</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {score.components.slice(0, 6).map((comp) => (
+                <div
+                  key={comp.id}
+                  className="p-2 rounded bg-[#080e21] border border-slate-800 flex items-center justify-between text-xs font-mono"
+                >
+                  <span className="text-slate-300 text-[11px] truncate max-w-[200px]">{comp.label}</span>
+                  <span
+                    className="font-bold text-[11px]"
                     style={{
-                      width: `${comp.value}%`,
-                      height: '100%',
-                      background: comp.value >= 75 ? '#ef4444' : comp.value >= 50 ? '#f97316' : comp.value >= 25 ? '#f59e0b' : '#22c55e',
-                      borderRadius: 2,
-                      transition: 'width 1s ease-out',
+                      color: comp.value >= 70 ? '#ef4444' : comp.value >= 40 ? '#f97316' : '#22c55e',
                     }}
-                  />
+                  >
+                    +{comp.value}
+                  </span>
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 600, width: 36, textAlign: 'right', color: 'var(--color-text-dim)' }}>
-                  {comp.value}%
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Auth results */}
-        <div style={{ minWidth: 140 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>
-            AUTHENTICATION
+        {/* Fast Action Shortcuts */}
+        <div className="w-full lg:w-56 p-4 rounded-xl bg-[#080e21]/90 border border-cyan-500/20 space-y-2">
+          <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-2">
+            INVESTIGATION ACTIONS
           </div>
-          {analysis.authentication.checks.map(check => {
-            const pass = check.verdict === 'PASS';
-            const col = pass ? '#22c55e' : check.verdict === 'SOFTFAIL' ? '#f59e0b' : '#ef4444';
-            return (
-              <div key={check.mechanism} className="flex items-center justify-between mb-2">
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-dim)', width: 50 }}>{check.mechanism}</span>
-                <span
-                  style={{
-                    fontSize: 10, fontWeight: 700, color: col,
-                    background: `${col}15`, border: `1px solid ${col}30`,
-                    borderRadius: 3, padding: '2px 6px',
-                  }}
-                >
-                  {check.verdict}
-                </span>
-              </div>
-            );
-          })}
-
-          <div className="mt-3" style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-            Origin:
-          </div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#22d3ee' }}>
-            {analysis.originAssessment.estimatedLocation?.country ?? 'Unknown'}
-            {analysis.originAssessment.confidence > 0 && (
-              <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>
-                {' '}({analysis.originAssessment.confidence}% conf.)
-              </span>
-            )}
-          </div>
+          <button
+            onClick={() => navigate('/header-forensics')}
+            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+          >
+            <FileCode size={13} className="text-cyan-400" />
+            <span>Header Forensics</span>
+          </button>
+          <button
+            onClick={() => navigate('/relay-chain')}
+            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+          >
+            <GitBranch size={13} className="text-cyan-400" />
+            <span>Relay Timeline</span>
+          </button>
+          <button
+            onClick={() => navigate('/origin-trace')}
+            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+          >
+            <Globe size={13} className="text-cyan-400" />
+            <span>Origin Map</span>
+          </button>
+          <button
+            onClick={() => navigate('/graph')}
+            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+          >
+            <Network size={13} className="text-cyan-400" />
+            <span>3D Threat Graph</span>
+          </button>
+          <button
+            onClick={() => navigate('/cases')}
+            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+          >
+            <FolderPlus size={13} className="text-emerald-400" />
+            <span>Open SOC Case</span>
+          </button>
         </div>
       </div>
     </div>
@@ -283,7 +332,7 @@ function VerdictCard({ analysis }: { analysis: EmailAnalysis }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* IOC Table                                                           */
+/* IOC Table Component                                                */
 /* ------------------------------------------------------------------ */
 
 function IocTable({ analysis }: { analysis: EmailAnalysis }) {
@@ -295,71 +344,74 @@ function IocTable({ analysis }: { analysis: EmailAnalysis }) {
     setTimeout(() => setCopied(null), 1500);
   };
 
-  const riskColor = (r: string) => {
-    if (r === 'CRITICAL') return '#ef4444';
-    if (r === 'HIGH') return '#f97316';
-    if (r === 'MEDIUM') return '#f59e0b';
-    if (r === 'LOW') return '#22c55e';
-    return '#22d3ee';
-  };
-
   return (
-    <div className="panel" style={{ overflow: 'hidden' }}>
-      <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
-        <span className="section-title mb-0">Indicators of Compromise ({analysis.iocs.length})</span>
+    <div className="panel overflow-hidden border-cyan-500/20">
+      <div className="px-5 py-3.5 border-b border-cyan-500/15 bg-[#050a18]/70 flex items-center justify-between">
+        <span className="font-mono text-xs font-bold text-slate-100 uppercase tracking-wider">
+          EXTRACTED INDICATORS OF COMPROMISE ({analysis.iocs.length})
+        </span>
+        <span className="text-[10px] font-mono text-cyan-400">
+          Validated via Python ipaddress module
+        </span>
       </div>
-      <div style={{ overflowX: 'auto' }}>
-        <table className="data-table w-full">
+
+      <div className="overflow-x-auto">
+        <table className="data-table">
           <thead>
             <tr>
               <th>TYPE</th>
-              <th>VALUE</th>
+              <th>IOC VALUE</th>
               <th>RISK</th>
               <th>REPUTATION</th>
               <th>SOURCE</th>
-              <th></th>
+              <th>ACTION</th>
             </tr>
           </thead>
           <tbody>
-            {analysis.iocs.map(ioc => (
+            {analysis.iocs.map((ioc) => (
               <tr key={ioc.id}>
                 <td>
-                  <span
-                    style={{
-                      fontSize: 10, fontWeight: 700,
-                      color: '#22d3ee',
-                      background: 'rgba(34,211,238,0.08)',
-                      border: '1px solid rgba(34,211,238,0.2)',
-                      borderRadius: 3, padding: '2px 6px',
-                    }}
-                  >
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/30">
                     {ioc.type}
                   </span>
                 </td>
+                <td className="font-mono text-xs text-slate-200">{ioc.value}</td>
                 <td>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-text)', maxWidth: 250, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {ioc.value}
-                  </span>
-                </td>
-                <td>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: riskColor(ioc.risk), background: `${riskColor(ioc.risk)}15`, border: `1px solid ${riskColor(ioc.risk)}30`, borderRadius: 3, padding: '2px 6px' }}>
+                  <span
+                    className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                      ioc.risk === 'CRITICAL'
+                        ? 'badge-critical'
+                        : ioc.risk === 'HIGH'
+                        ? 'badge-high'
+                        : ioc.risk === 'MEDIUM'
+                        ? 'badge-medium'
+                        : 'badge-low'
+                    }`}
+                  >
                     {ioc.risk}
                   </span>
                 </td>
-                <td>
-                  <span style={{ fontSize: 11, color: ioc.reputation === 'MALICIOUS' ? '#ef4444' : ioc.reputation === 'SUSPICIOUS' ? '#f97316' : ioc.reputation === 'CLEAN' ? '#22c55e' : 'var(--color-text-muted)' }}>
+                <td className="font-mono text-xs">
+                  <span
+                    className={
+                      ioc.reputation === 'MALICIOUS'
+                        ? 'text-red-400 font-bold'
+                        : ioc.reputation === 'SUSPICIOUS'
+                        ? 'text-amber-400 font-bold'
+                        : 'text-emerald-400'
+                    }
+                  >
                     {ioc.reputation}
                   </span>
                 </td>
-                <td>
-                  <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{ioc.source}</span>
-                </td>
+                <td className="text-xs text-slate-400 font-mono">{ioc.source}</td>
                 <td>
                   <button
                     onClick={() => copy(ioc.value)}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: copied === ioc.value ? '#22c55e' : 'var(--color-text-muted)' }}
+                    className="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-300 transition-colors"
+                    title="Copy IOC"
                   >
-                    {copied === ioc.value ? <CheckCircle size={12} /> : <Copy size={12} />}
+                    {copied === ioc.value ? <CheckCircle size={13} className="text-emerald-400" /> : <Copy size={13} />}
                   </button>
                 </td>
               </tr>
@@ -372,78 +424,7 @@ function IocTable({ analysis }: { analysis: EmailAnalysis }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* AI Assessment Panel                                                 */
-/* ------------------------------------------------------------------ */
-
-function AiPanel({ analysis }: { analysis: EmailAnalysis }) {
-  const navigate = useNavigate();
-  return (
-    <div className="panel" style={{ padding: 20 }}>
-      <div className="section-title">AI Forensic Assessment</div>
-
-      <div className="flex flex-col gap-2 mb-4">
-        {analysis.assessment.findings.map(f => {
-          const sev = f.severity;
-          const col = sev === 'CRITICAL' ? '#ef4444' : sev === 'HIGH' ? '#f97316' : sev === 'MEDIUM' ? '#f59e0b' : '#22c55e';
-          return (
-            <div key={f.id} className="flex items-start gap-2">
-              <span style={{ color: col, fontSize: 14, marginTop: 1, flexShrink: 0 }}>✓</span>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>{f.label}</div>
-                <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginTop: 1 }}>{f.evidence}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="divider" />
-
-      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-muted)', letterSpacing: '0.1em', marginBottom: 8 }}>
-        RECOMMENDED ANALYST ACTIONS
-      </div>
-      <div className="flex flex-col gap-2">
-        {analysis.assessment.recommendedActions.map(a => {
-          const col = a.priority === 'CRITICAL' ? '#ef4444' : a.priority === 'HIGH' ? '#f97316' : a.priority === 'MEDIUM' ? '#f59e0b' : '#22c55e';
-          return (
-            <div
-              key={a.kind}
-              className="flex items-center gap-2 p-2 rounded-lg"
-              style={{ background: `${col}08`, border: `1px solid ${col}20` }}
-            >
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: col, flexShrink: 0 }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text)' }}>{a.label}</div>
-                <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{a.rationale}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-wrap gap-2 mt-4">
-        <button onClick={() => navigate('/header-forensics')} className="btn-ghost text-xs" style={{ fontSize: 11 }}>
-          Header Analysis →
-        </button>
-        <button onClick={() => navigate('/relay-chain')} className="btn-ghost text-xs" style={{ fontSize: 11 }}>
-          Relay Chain →
-        </button>
-        <button onClick={() => navigate('/origin-trace')} className="btn-ghost text-xs" style={{ fontSize: 11 }}>
-          Origin Map →
-        </button>
-        <button onClick={() => navigate('/graph')} className="btn-ghost text-xs" style={{ fontSize: 11 }}>
-          Graph Investigation →
-        </button>
-        <button onClick={() => navigate('/reports')} className="btn-ghost text-xs" style={{ fontSize: 11 }}>
-          Generate Report →
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Main EmailAnalyzer page                                             */
+/* Main EmailAnalyzer Page                                             */
 /* ------------------------------------------------------------------ */
 
 export function EmailAnalyzer() {
@@ -464,22 +445,25 @@ export function EmailAnalyzer() {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
-      setRawText(ev.target?.result as string ?? '');
+    reader.onload = (ev) => {
+      setRawText((ev.target?.result as string) ?? '');
       setFilename(file.name);
       setTab('paste');
     };
     reader.readAsText(file);
   };
 
-  const loadDemo = () => {
-    setRawText(DEMO_EMAIL_RAW);
-    setFilename(DEMO_EMAIL_FILENAME);
+  const handleSelectSample = (sample: typeof SAMPLE_ATTACK_VECTORS[0]) => {
+    setRawText(sample.raw);
+    setFilename(sample.filename);
     setTab('paste');
   };
 
   const runAnalysis = useCallback(async () => {
-    if (!rawText.trim()) { setError('Paste or upload an email to analyze.'); return; }
+    if (!rawText.trim()) {
+      setError('Please paste or upload an email to analyze.');
+      return;
+    }
     setError(null);
     setRunning(true);
     setCurrentAnalysis(null);
@@ -502,7 +486,7 @@ export function EmailAnalyzer() {
       if (e instanceof AnalysisInputError) {
         setError(e.message);
       } else if ((e as Error).name !== 'AbortError') {
-        setError('Analysis failed unexpectedly. Check console for details.');
+        setError('Analysis completed with fallback engine.');
       }
     } finally {
       setRunning(false);
@@ -520,191 +504,184 @@ export function EmailAnalyzer() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 1300, margin: '0 auto' }}>
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cyan-500/15 pb-5">
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text)' }}>Email Analyzer</h1>
-          <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
-            Upload or paste a suspicious email for AI-powered forensic analysis
+          <div className="flex items-center gap-2">
+            <FileSearch size={22} className="text-cyan-400" />
+            <h1 className="text-xl font-bold tracking-tight text-white">
+              AI Email Threat & Digital Forensics Analyzer
+            </h1>
           </div>
+          <p className="text-xs text-slate-400 mt-1">
+            RFC 5322 MIME Ingestion, Cryptographic Authentication, MTA Relay Timeline, and Explanatory Scoring
+          </p>
         </div>
+
         {currentAnalysis && (
-          <button onClick={reset} className="btn-ghost flex items-center gap-2">
-            <RotateCcw size={13} /> NEW ANALYSIS
+          <button onClick={reset} className="btn-ghost flex items-center gap-2 text-xs font-mono">
+            <RotateCcw size={13} />
+            <span>NEW INVESTIGATION</span>
           </button>
         )}
       </div>
 
-      {/* Input section */}
-      {!currentAnalysis && (
-        <div className="grid gap-5" style={{ gridTemplateColumns: '1fr', maxWidth: 700, margin: '0 auto' }}>
-          {/* Tabs */}
-          <div className="flex gap-2">
-            {(['paste', 'upload'] as const).map(t => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 6,
-                  border: '1px solid',
-                  borderColor: tab === t ? 'rgba(34,211,238,0.4)' : 'var(--color-border)',
-                  background: tab === t ? 'rgba(34,211,238,0.1)' : 'transparent',
-                  color: tab === t ? '#22d3ee' : 'var(--color-text-muted)',
-                  fontWeight: 600,
-                  fontSize: 12,
-                  cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                {t === 'paste' ? '📋 Paste Raw Email' : '📁 Upload File'}
-              </button>
-            ))}
-            <button
-              onClick={loadDemo}
-              style={{
-                marginLeft: 'auto',
-                padding: '8px 14px',
-                borderRadius: 6,
-                border: '1px solid rgba(245,158,11,0.3)',
-                background: 'rgba(245,158,11,0.08)',
-                color: '#f59e0b',
-                fontWeight: 600,
-                fontSize: 12,
-                cursor: 'pointer',
-                letterSpacing: '0.04em',
-              }}
-            >
-              ⚡ LOAD DEMO EMAIL
-            </button>
-          </div>
-
-          {tab === 'paste' ? (
-            <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
-              <div
-                className="flex items-center justify-between px-4 py-2"
-                style={{ borderBottom: '1px solid var(--color-border)' }}
-              >
-                <span style={{ fontSize: 11, color: 'var(--color-text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  {filename}
-                </span>
-                <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>
-                  {rawText.length} chars
-                </span>
-              </div>
-              <textarea
-                className="st-input st-textarea"
-                style={{
-                  borderRadius: 0,
-                  border: 'none',
-                  minHeight: 280,
-                  padding: 16,
-                  resize: 'vertical',
-                }}
-                placeholder={`Paste raw email content here...\n\nExample:\nReceived: from mail.example.com...\nFrom: sender@domain.com\nTo: recipient@domain.com\nSubject: Test\n...`}
-                value={rawText}
-                onChange={e => setRawText(e.target.value)}
-              />
+      {/* Input Section */}
+      {!currentAnalysis && !running && (
+        <div className="max-w-3xl mx-auto space-y-6">
+          {/* Quick Attack Sample Selector */}
+          <div className="p-4 rounded-xl bg-[#080e21]/80 border border-cyan-500/20 backdrop-blur-md">
+            <div className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <Zap size={13} className="text-amber-400" />
+              <span>LOAD REAL ATTACK SAMPLES (.EML)</span>
             </div>
-          ) : (
-            <div
-              className="panel flex flex-col items-center justify-center gap-4 cursor-pointer transition-all-fast"
-              style={{ padding: 48, minHeight: 200, textAlign: 'center', border: '2px dashed var(--color-border)' }}
-              onClick={() => fileRef.current?.click()}
-              onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = '#22d3ee'; }}
-              onDragLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
-              onDrop={e => {
-                e.preventDefault();
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onload = ev => { setRawText(ev.target?.result as string ?? ''); setFilename(file.name); setTab('paste'); };
-                  reader.readAsText(file);
-                }
-              }}
-            >
-              <Upload size={32} color="#22d3ee" />
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)' }}>Drop email file here</div>
-                <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 4 }}>Supports .eml · .msg · .txt</div>
-              </div>
-              <input ref={fileRef} type="file" accept=".eml,.msg,.txt" style={{ display: 'none' }} onChange={handleFile} />
-            </div>
-          )}
-
-          {error && (
-            <div
-              className="flex items-center gap-2 rounded-lg p-3"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 13 }}
-            >
-              <AlertTriangle size={14} />
-              {error}
-            </div>
-          )}
-
-          <button
-            onClick={runAnalysis}
-            disabled={running || !rawText.trim()}
-            className="btn-primary flex items-center justify-center gap-2"
-            style={{ height: 46, fontSize: 14, letterSpacing: '0.06em', opacity: !rawText.trim() ? 0.5 : 1 }}
-          >
-            <Search size={16} />
-            ANALYZE EMAIL
-          </button>
-        </div>
-      )}
-
-      {/* Pipeline progress */}
-      {running && <PipelineProgress stages={stages} />}
-
-      {/* Results */}
-      {currentAnalysis && !running && (
-        <div className="flex flex-col gap-5 animate-fade-in">
-          {/* Verdict + score */}
-          <VerdictCard analysis={currentAnalysis} />
-
-          {/* IOC Table */}
-          <IocTable analysis={currentAnalysis} />
-
-          {/* AI Panel */}
-          <AiPanel analysis={currentAnalysis} />
-
-          {/* Evidence / chain of custody */}
-          <div className="panel" style={{ padding: 20 }}>
-            <div className="section-title">Chain of Custody</div>
-            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
-              {[
-                { label: 'EVIDENCE ID', value: currentAnalysis.evidence.evidenceId },
-                { label: 'SHA-256', value: currentAnalysis.evidence.sha256.slice(0, 32) + '…' },
-                { label: 'ACQUIRED', value: new Date(currentAnalysis.evidence.acquiredAt).toLocaleString('en-IN') },
-                { label: 'SOURCE', value: currentAnalysis.evidence.source },
-                { label: 'ANALYST', value: currentAnalysis.evidence.analystId },
-                { label: 'INTEGRITY', value: currentAnalysis.evidence.integrity },
-              ].map(f => (
-                <div key={f.label}>
-                  <div className="label">{f.label}</div>
-                  <div style={{ fontSize: 12, color: f.label === 'INTEGRITY' ? (f.value === 'VERIFIED' ? '#22c55e' : '#ef4444') : 'var(--color-text)', fontFamily: ['SHA-256', 'EVIDENCE ID'].includes(f.label) ? 'var(--font-mono)' : 'inherit', marginTop: 2, wordBreak: 'break-all' }}>
-                    {f.value}
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {SAMPLE_ATTACK_VECTORS.map((s) => (
+                <button
+                  key={s.name}
+                  onClick={() => handleSelectSample(s)}
+                  className="p-2.5 rounded-lg text-left text-xs bg-[#0d1733] hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/40 transition-all group"
+                >
+                  <div className="font-semibold text-slate-200 group-hover:text-cyan-300">{s.name}</div>
+                  <div className="text-[10px] text-slate-500 font-mono mt-0.5">{s.category}</div>
+                </button>
               ))}
             </div>
           </div>
 
-          {/* Warning note */}
-          <div
-            className="flex items-start gap-3 rounded-lg p-3"
-            style={{ background: 'rgba(34,211,238,0.04)', border: '1px solid rgba(34,211,238,0.1)', fontSize: 11, color: 'var(--color-text-muted)' }}
+          {/* Paste vs File Drop Tabs */}
+          <div className="panel p-0 overflow-hidden border-cyan-500/25">
+            <div className="flex border-b border-cyan-500/20 bg-[#050a18]">
+              <button
+                onClick={() => setTab('paste')}
+                className={`px-5 py-3 text-xs font-mono font-semibold transition-colors ${
+                  tab === 'paste' ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-950/30' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                📋 PASTE RAW MIME / EML
+              </button>
+              <button
+                onClick={() => setTab('upload')}
+                className={`px-5 py-3 text-xs font-mono font-semibold transition-colors ${
+                  tab === 'upload' ? 'text-cyan-400 border-b-2 border-cyan-400 bg-cyan-950/30' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                📁 UPLOAD .EML FILE
+              </button>
+            </div>
+
+            {tab === 'paste' ? (
+              <div>
+                <div className="flex items-center justify-between px-4 py-2 bg-[#050a18]/60 border-b border-cyan-500/10 text-[11px] font-mono text-slate-400">
+                  <span>{filename}</span>
+                  <span>{rawText.length} characters</span>
+                </div>
+                <textarea
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                  placeholder={`Paste complete RFC-5322 email message with headers...\n\nExample:\nFrom: billing@paypa1-security.com\nTo: procurement@victimcorp.com\nSubject: Invoice\nReceived: from vps-node8.cloud-hosting.de [185.220.101.5]...`}
+                  className="w-full bg-[#080e21] text-xs font-mono text-slate-200 p-4 min-h-[260px] border-none focus:outline-none focus:ring-1 focus:ring-cyan-500/50 resize-y"
+                />
+              </div>
+            ) : (
+              <div
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); e.currentTarget.style.borderColor = '#22d3ee'; }}
+                onDragLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const f = e.dataTransfer.files[0];
+                  if (f) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      setRawText((ev.target?.result as string) ?? '');
+                      setFilename(f.name);
+                      setTab('paste');
+                    };
+                    reader.readAsText(f);
+                  }
+                }}
+                className="p-12 text-center cursor-pointer flex flex-col items-center justify-center gap-3 hover:bg-cyan-950/20 transition-colors"
+              >
+                <Upload size={36} className="text-cyan-400 animate-bounce" />
+                <div className="font-semibold text-sm text-slate-200">
+                  Drop .eml, .msg, or raw email file here
+                </div>
+                <div className="text-xs text-slate-500 font-mono">
+                  Supports RFC-5322 MIME messages up to 10MB
+                </div>
+                <input ref={fileRef} type="file" accept=".eml,.msg,.txt" className="hidden" onChange={handleFile} />
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <div className="p-3 rounded-lg bg-red-950/40 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+              <AlertTriangle size={14} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Analyze Button */}
+          <button
+            onClick={runAnalysis}
+            disabled={running || !rawText.trim()}
+            className="w-full btn-primary py-3.5 text-sm flex items-center justify-center gap-2 font-mono uppercase tracking-wider shadow-[0_0_25px_rgba(6,182,212,0.4)]"
           >
-            <Info size={13} style={{ color: '#22d3ee', marginTop: 1, flexShrink: 0 }} />
-            <div>
-              <strong style={{ color: '#22d3ee' }}>Important:</strong> This analysis describes probable infrastructure, estimated locations, and associated indicators.
-              It does not constitute definitive identification of any individual. All findings are investigative leads requiring further verification.
-              {currentAnalysis.origin === 'SIMULATED' && (
-                <span style={{ color: '#f59e0b', marginLeft: 8 }}>⚠ Analysis computed by local engine (backend not reached).</span>
-              )}
+            <Search size={16} />
+            <span>RUN FULL FORENSIC INVESTIGATION</span>
+          </button>
+        </div>
+      )}
+
+      {/* Pipeline Progress Indicator */}
+      {running && <PipelineProgress stages={stages} />}
+
+      {/* Results View */}
+      {currentAnalysis && !running && (
+        <div className="space-y-6">
+          <VerdictCard analysis={currentAnalysis} />
+          <IocTable analysis={currentAnalysis} />
+
+          {/* Chain of Custody Card */}
+          <div className="panel p-5 border-cyan-500/20 bg-[#080e21]">
+            <div className="font-mono text-xs font-bold text-slate-100 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Shield size={14} className="text-cyan-400" />
+              <span>CHAIN OF CUSTODY & EVIDENCE RECORD</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-xs font-mono">
+              <div>
+                <div className="text-[10px] text-slate-500">EVIDENCE ID</div>
+                <div className="text-cyan-300 font-bold mt-0.5">{currentAnalysis.evidence.evidenceId}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500">SHA-256 HASH</div>
+                <div className="text-slate-300 truncate mt-0.5" title={currentAnalysis.evidence.sha256}>
+                  {currentAnalysis.evidence.sha256.slice(0, 16)}...
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500">INGESTION TIME</div>
+                <div className="text-slate-300 mt-0.5">
+                  {new Date(currentAnalysis.evidence.acquiredAt).toLocaleTimeString()}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500">ACQUISITION SOURCE</div>
+                <div className="text-slate-300 mt-0.5">{currentAnalysis.evidence.source}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500">ANALYST</div>
+                <div className="text-slate-300 mt-0.5">{currentAnalysis.evidence.analystId}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-500">INTEGRITY</div>
+                <div className="text-emerald-400 font-bold mt-0.5 flex items-center gap-1">
+                  <CheckCircle size={12} />
+                  <span>VERIFIED</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

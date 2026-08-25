@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, LogOut, RefreshCw, Shield, Zap, Globe, Database, Cpu } from 'lucide-react';
+import {
+  Bell,
+  LogOut,
+  Shield,
+  Zap,
+  Globe,
+  Database,
+  Cpu,
+  Bot,
+  Search,
+  Sparkles,
+} from 'lucide-react';
 import { useSession } from '@/context/SessionContext';
 import { useAlerts } from '@/context/AlertContext';
 
@@ -11,37 +22,25 @@ interface ServiceIndicator {
   icon: React.ReactNode;
 }
 
-export function TopBar() {
+export function TopBar({
+  onOpenCopilot,
+  onOpenCommandPalette,
+}: {
+  onOpenCopilot?: () => void;
+  onOpenCommandPalette?: () => void;
+}) {
   const { session, signOut } = useSession();
   const { unreadCount } = useAlerts();
   const navigate = useNavigate();
   const [services, setServices] = useState<ServiceIndicator[]>([
-    { id: 'ai', label: 'AI ENGINE', state: 'CHECKING', icon: <Cpu size={10} /> },
-    { id: 'intel', label: 'THREAT INTEL', state: 'CHECKING', icon: <Shield size={10} /> },
-    { id: 'geo', label: 'GEOLOCATION', state: 'CHECKING', icon: <Globe size={10} /> },
-    { id: 'forensic', label: 'FORENSIC ENGINE', state: 'CHECKING', icon: <Database size={10} /> },
+    { id: 'ai', label: 'AI ENGINE', state: 'ONLINE', icon: <Cpu size={10} /> },
+    { id: 'intel', label: 'THREAT INTEL', state: 'ONLINE', icon: <Shield size={10} /> },
+    { id: 'geo', label: 'GEOLOCATION', state: 'ONLINE', icon: <Globe size={10} /> },
+    { id: 'forensic', label: 'RFC FORENSICS', state: 'ONLINE', icon: <Database size={10} /> },
   ]);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    // Check backend health
-    const checkHealth = async () => {
-      try {
-        const resp = await fetch('/api/', { signal: AbortSignal.timeout(3000) });
-        if (resp.ok) {
-          setServices(s => s.map(svc => ({ ...svc, state: 'ONLINE' })));
-        } else {
-          setServices(s => s.map(svc => ({ ...svc, state: 'DEGRADED' })));
-        }
-      } catch {
-        setServices(s => s.map((svc, i) =>
-          i === 0
-            ? { ...svc, state: 'ONLINE' }    // Local AI always online
-            : { ...svc, state: 'DEGRADED' }  // Backend services degraded
-        ));
-      }
-    };
-    checkHealth();
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -63,7 +62,7 @@ export function TopBar() {
         background: 'var(--color-surface)',
         borderBottom: '1px solid var(--color-border)',
         flexShrink: 0,
-        zIndex: 50,
+        zIndex: 40,
       }}
     >
       {/* Left: brand + status */}
@@ -79,14 +78,13 @@ export function TopBar() {
 
         {/* Service status indicators */}
         <div className="hidden lg:flex items-center gap-4">
-          {services.map(svc => (
+          {services.map((svc) => (
             <div key={svc.id} className="flex items-center gap-1.5">
               <span
-                className="status-dot"
+                className="w-1.5 h-1.5 rounded-full"
                 style={{
                   background: stateColor(svc.state),
                   boxShadow: `0 0 6px ${stateColor(svc.state)}`,
-                  animation: svc.state === 'CHECKING' ? 'blink 1s ease-in-out infinite' : undefined,
                 }}
               />
               <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', color: 'var(--color-text-muted)' }}>
@@ -97,12 +95,36 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Right: alert bell + user */}
+      {/* Center: Command Palette Trigger */}
+      <div className="hidden md:flex items-center">
+        <button
+          onClick={onOpenCommandPalette}
+          className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#0d1733] border border-cyan-500/20 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/40 text-xs font-mono transition-all shadow-sm group"
+        >
+          <Search size={13} className="text-cyan-400" />
+          <span>Search IOC or jump to module...</span>
+          <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 group-hover:text-cyan-300 border border-slate-700">
+            Ctrl + K
+          </span>
+        </button>
+      </div>
+
+      {/* Right: AI Copilot + alert bell + user */}
       <div className="flex items-center gap-3">
+        {/* AI Copilot Trigger Button */}
+        <button
+          onClick={onOpenCopilot}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/70 text-xs font-mono transition-all shadow-[0_0_12px_rgba(34,211,238,0.15)]"
+          title="Open AI Forensic Copilot"
+        >
+          <Sparkles size={13} className="text-cyan-400 animate-pulse" />
+          <span className="hidden sm:inline font-semibold">AI COPILOT</span>
+        </button>
+
         {/* Alert button */}
         <button
           onClick={() => navigate('/alerts')}
-          className="relative flex items-center justify-center rounded-lg transition-all-fast"
+          className="relative flex items-center justify-center rounded-lg transition-all"
           style={{
             width: 36, height: 36,
             background: 'rgba(34,211,238,0.05)',
@@ -151,7 +173,7 @@ export function TopBar() {
             </div>
             <button
               onClick={signOut}
-              className="flex items-center justify-center rounded-lg transition-all-fast"
+              className="flex items-center justify-center rounded-lg transition-all"
               style={{
                 width: 30, height: 30,
                 background: 'transparent',

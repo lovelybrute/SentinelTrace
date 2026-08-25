@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { AICopilotDrawer } from './AICopilotDrawer';
+import { CommandPalette } from './CommandPalette';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,19 +10,35 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--color-bg)' }}>
-      <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
+    <div className="flex h-screen overflow-hidden bg-[#020617]">
+      <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((c) => !c)} />
+      
       <div className="flex flex-col flex-1 overflow-hidden">
-        <TopBar />
-        <main
-          className="flex-1 overflow-y-auto"
-          style={{ background: 'var(--color-bg)' }}
-        >
+        <TopBar
+          onOpenCopilot={() => setCopilotOpen(true)}
+          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+        />
+        <main className="flex-1 overflow-y-auto bg-[#020617]">
           {children}
         </main>
       </div>
+
+      {/* AI Copilot Drawer */}
+      <AICopilotDrawer
+        isOpen={copilotOpen}
+        onClose={() => setCopilotOpen(false)}
+      />
+
+      {/* Global Command Palette */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onOpenCopilot={() => setCopilotOpen(true)}
+      />
     </div>
   );
 }

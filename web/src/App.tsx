@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSession } from '@/context/SessionContext';
 import { Layout } from '@/components/shell/Layout';
+import { Landing } from '@/pages/Landing';
 import { Login } from '@/pages/Login';
 import { Dashboard } from '@/pages/Dashboard';
 import { EmailAnalyzer } from '@/pages/EmailAnalyzer';
@@ -28,10 +29,17 @@ export default function App() {
 
   return (
     <Routes>
+      {/* Public Hero / Storytelling Landing Page */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/landing" element={<Landing />} />
+
+      {/* Auth */}
       <Route
         path="/login"
         element={session ? <Navigate to="/dashboard" replace /> : <Login />}
       />
+
+      {/* Protected SOC Forensic Modules */}
       <Route
         path="/dashboard"
         element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
@@ -84,7 +92,9 @@ export default function App() {
         path="/settings"
         element={<ProtectedRoute><Settings /></ProtectedRoute>}
       />
-      <Route path="*" element={<Navigate to={session ? '/dashboard' : '/login'} replace />} />
+
+      {/* Catch-all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
