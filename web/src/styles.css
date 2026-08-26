@@ -629,34 +629,6 @@ body {
 .blood-drip-three { left: 66%; animation-delay: -1.9s; height: 13px; }
 .blood-drip-four { left: 86%; animation-delay: -0.7s; height: 16px; }
 
-.leader-identity {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin-top: 3px;
-}
-
-.leader-identity span {
-  padding: 3px 7px;
-  border: 1px solid rgba(34, 211, 238, 0.18);
-  border-radius: 999px;
-  color: #7dd3fc;
-  background: rgba(34, 211, 238, 0.07);
-  font-family: var(--font-mono);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-
-.leader-identity strong {
-  color: #f8fafc;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.09em;
-  text-shadow: 0 0 14px rgba(226, 232, 240, 0.16);
-}
-
 .glass-input {
   border: 1px solid rgba(125, 211, 252, 0.16);
   background: linear-gradient(110deg, rgba(15, 29, 52, 0.62), rgba(3, 10, 24, 0.48));
@@ -930,8 +902,6 @@ body {
   .login-shell { padding: 18px 12px; }
   .login-glass-card { padding: 26px 20px 22px; border-radius: 22px; }
   .brute-blood-text { font-size: 21px; }
-  .leader-identity { align-items: stretch; flex-direction: column; gap: 6px; }
-  .leader-identity span { align-self: center; }
   .dashboard-page { padding: 14px !important; }
   .dashboard-command-header { align-items: stretch; }
   .live-investigation-glass { justify-content: center; width: 100%; }

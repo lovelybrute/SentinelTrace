@@ -195,7 +195,7 @@ export function Login() {
         </div>
 
         {/* Permanent team signature — remains visible after the cinematic intro */}
-        <section className="team-signature-glass" aria-label="Team Brute and team leader">
+        <section className="team-signature-glass" aria-label="Team Brute">
           <div className="team-signature-kicker">BUILT FOR SIH 2026 BY</div>
           <div className="brute-blood-lockup" aria-label="TEAM BRUTE">
             <span className="brute-blood-text" aria-hidden="true">TEAM BRUTE</span>
@@ -203,10 +203,6 @@ export function Login() {
             <span className="blood-drip blood-drip-two" aria-hidden="true" />
             <span className="blood-drip blood-drip-three" aria-hidden="true" />
             <span className="blood-drip blood-drip-four" aria-hidden="true" />
-          </div>
-          <div className="leader-identity">
-            <span>TEAM LEADER</span>
-            <strong>C PAVAN KUMAR</strong>
           </div>
         </section>
 
