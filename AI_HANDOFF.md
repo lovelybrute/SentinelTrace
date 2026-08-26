@@ -46,6 +46,7 @@
 - No frontend lint script is currently configured.
 - Backend offline unit tests covering SPF, DKIM/DMARC, relay parsing, BEC, attachments, URLs, and ML disclosure pass 18/18.
 - Backend API health, stats, and case-lifecycle tests pass 3/3.
+- ML metrics API and model-loader tests pass; frontend Model Performance route builds successfully.
 - Test dependencies are declared in `requirements-dev.txt`.
 - Vite reports a non-blocking circular/manual chunk warning and a large Three.js vendor chunk.
 
@@ -53,7 +54,7 @@
 - Complete Phase 5 and Phase 6.
 - Consider refining Vite vendor chunking to reduce the Three.js chunk size.
 - Add a frontend lint script.
-- Validate the prototype ML engine on a public labeled email corpus before making accuracy claims.
+- Supply a licensed public labeled corpus and run the new `ml/` workflow; no dataset is bundled because email corpora may contain personal data and independent license terms.
 
 ## 11. The exact next implementation step
 - Begin Phase 5: Holographic Forensic Lab email analyzer, preserving the existing backend response contracts.

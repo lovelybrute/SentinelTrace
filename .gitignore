@@ -12,6 +12,10 @@ backend/sentineltrace.db
 *.db
 *.log
 node_modules/
+ml/datasets/
+ml/artifacts/*.joblib
+ml/artifacts/*.joblib.sha256
+ml/artifacts/metrics.json
 web/node_modules/
 web/dist/
 frontend/dist/
@@ -35,4 +39,3 @@ htmlcov/
 # Editor
 *.swp
 *.swo
-

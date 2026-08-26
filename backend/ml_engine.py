@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
+from validated_model import ValidatedPhishingModel
 
 try:
     from sklearn.ensemble import GradientBoostingClassifier
@@ -31,6 +32,7 @@ class MLThreatEngine:
 
     def __init__(self):
         self.is_ready = SKLEARN_AVAILABLE
+        self.validated_model = ValidatedPhishingModel()
         self._init_benchmark_model()
 
     def _init_benchmark_model(self):
@@ -138,6 +140,10 @@ class MLThreatEngine:
         Run multi-class threat classification and explainability analysis.
         """
         feature_vec, feat_dict = self.extract_feature_vector(email_data)
+        evidence = email_data.get("evidence", {})
+        validated = self.validated_model.predict(
+            f"Subject: {evidence.get('subject', '')}\n{evidence.get('body_preview', '')}"
+        )
 
         if not SKLEARN_AVAILABLE or not hasattr(self, "model"):
             # Fallback heuristic calculation
@@ -173,7 +179,7 @@ class MLThreatEngine:
             if feat_dict["urgency_markers"] > 0:
                 contributions.append({"signal": "Urgent coercive language markers present", "weight": +8, "category": "CONTEXTUAL"})
 
-            return {
+            result = {
                 "primary_classification": top_class,
                 "confidence_score": round(top_prob * 100, 1),
                 "probabilities": prob_distribution,
@@ -188,6 +194,17 @@ class MLThreatEngine:
                     "not independently validated accuracy claims."
                 )
             }
+            if validated:
+                result["validated_binary_model"] = validated
+                if validated["label"] == "PHISHING" and top_class in ("LEGITIMATE", "SUSPICIOUS"):
+                    result["primary_classification"] = "PHISHING"
+                    result["confidence_score"] = round(validated["probabilities"].get("PHISHING", 0) * 100, 1)
+            else:
+                result["validated_binary_model"] = {
+                    "status": "UNAVAILABLE",
+                    "reason": self.validated_model.error,
+                }
+            return result
 
         except Exception as e:
             return self._fallback_rule_based(feat_dict, error=str(e))

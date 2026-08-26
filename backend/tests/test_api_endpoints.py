@@ -12,6 +12,12 @@ def test_health_endpoint(client: TestClient):
     assert data["status"] == "online"
 
 
+def test_model_metrics_endpoint(client: TestClient):
+    resp = client.get("/model/metrics")
+    assert resp.status_code == 200
+    assert "validation_status" in resp.json()
+
+
 def test_stats_endpoint(client: TestClient):
     resp = client.get("/stats")
     assert resp.status_code == 200

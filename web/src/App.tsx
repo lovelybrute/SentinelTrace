@@ -20,6 +20,7 @@ const ForensicReports = React.lazy(() => import('@/pages/ForensicReports').then(
 const AlertCenter = React.lazy(() => import('@/pages/AlertCenter').then(m => ({ default: m.AlertCenter })));
 const Analytics = React.lazy(() => import('@/pages/Analytics').then(m => ({ default: m.Analytics })));
 const Settings = React.lazy(() => import('@/pages/Settings').then(m => ({ default: m.Settings })));
+const ModelPerformance = React.lazy(() => import('@/pages/ModelPerformance').then(m => ({ default: m.ModelPerformance })));
 const TeamBruteIntro = React.lazy(() =>
   import('@/components/intro/TeamBruteIntro').then(m => ({ default: m.TeamBruteIntro })),
 );
@@ -126,6 +127,10 @@ export default function App() {
           <Route
             path="/analytics"
             element={<ProtectedRoute><Analytics /></ProtectedRoute>}
+          />
+          <Route
+            path="/model-performance"
+            element={<ProtectedRoute><ModelPerformance /></ProtectedRoute>}
           />
           <Route
             path="/settings"

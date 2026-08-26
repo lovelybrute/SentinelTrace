@@ -19,6 +19,7 @@ from database import (
 )
 from report_generator import ReportGenerator
 from stix_exporter import STIXExporter
+from validated_model import read_model_metrics
 
 
 # ============================================================
@@ -117,6 +118,12 @@ def health_check(db: Session = Depends(get_db)):
         "environment": settings.ENVIRONMENT,
         "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_BYTES / (1024 * 1024)
     }
+
+
+@app.get("/model/metrics")
+def model_metrics():
+    """Return persisted held-out evaluation metrics, or an explicit not-trained state."""
+    return read_model_metrics()
 
 
 # ============================================================

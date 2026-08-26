@@ -97,6 +97,23 @@ export function fetchThreatsByCountry(signal?: AbortSignal): Promise<WireCountry
   return request<WireCountryThreat[]>('/threat-by-country', signal ? { signal } : {});
 }
 
+export interface ModelMetrics {
+  validation_status: string;
+  message?: string;
+  trained_at?: string;
+  dataset_records?: number;
+  train_records?: number;
+  test_records?: number;
+  labels?: string[];
+  selected_model?: string;
+  models?: Record<string, { accuracy: number; precision_macro: number; recall_macro: number; f1_macro: number; confusion_matrix: number[][] }>;
+  limitations?: string;
+}
+
+export function fetchModelMetrics(signal?: AbortSignal): Promise<ModelMetrics> {
+  return request<ModelMetrics>('/model/metrics', signal ? { signal } : {});
+}
+
 /**
  * `GET /analysis/{id}` — a stored analysis. `full_analysis` holds the complete
  * original payload, so a persisted case can be re-correlated rather than

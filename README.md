@@ -125,6 +125,15 @@ cd web && npm run typecheck
 cd web && npm run build
 ```
 
+### Train the validated phishing model
+
+```bash
+python ml/prepare_dataset.py --legitimate-dir data/ham --phishing-dir data/phishing
+python ml/train_model.py
+```
+
+Open **Model Performance** in the dashboard to see held-out precision, recall, macro F1, class support, and validation status. The backend activates the saved classifier only after minimum held-out support is met; smaller experiments remain labeled as prototypes. See `ml/README.md`.
+
 ---
 
 ## 📂 Repository Layout

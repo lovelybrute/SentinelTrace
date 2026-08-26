@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Mail, Shield, FileSearch, MapPin,
   Network, Layers, FolderOpen, FileText, Bell, BarChart3,
   Settings, ChevronLeft, ChevronRight, Target, AlertTriangle,
-  Search, Database, GitBranch
+  Search, Database, GitBranch, BrainCircuit
 } from 'lucide-react';
 import { useAlerts } from '@/context/AlertContext';
 import { useSession } from '@/context/SessionContext';
@@ -33,6 +33,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/cases', icon: <FolderOpen size={16} />, label: 'Case Management', group: 'OPERATIONS' },
   { to: '/reports', icon: <FileText size={16} />, label: 'Forensic Reports', group: 'OPERATIONS' },
   { to: '/analytics', icon: <BarChart3 size={16} />, label: 'Analytics', group: 'OPERATIONS' },
+  { to: '/model-performance', icon: <BrainCircuit size={16} />, label: 'Model Performance', group: 'OPERATIONS' },
 
   { to: '/settings', icon: <Settings size={16} />, label: 'Settings', group: 'SYSTEM' },
 ];

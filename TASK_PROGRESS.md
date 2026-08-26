@@ -31,3 +31,11 @@
 - [x] Declare runtime ML, cryptography, DKIM, and development-test dependencies.
 - [x] Label the ML classifier as a synthetic prototype pending public-corpus validation.
 - [x] Add regression tests for SPF, DKIM truthfulness, and ML disclosure.
+
+## Validated ML Pipeline
+- [x] Add deduplicating `.eml`/CSV dataset preparation.
+- [x] Add stratified holdout evaluation and model comparison.
+- [x] Persist model, dataset hash, metrics, confusion matrix, and limitations.
+- [x] Gate backend activation on minimum held-out class support.
+- [x] Add `/model/metrics` and the Model Performance interface.
+- [ ] Run the workflow with a separately licensed public phishing corpus.
