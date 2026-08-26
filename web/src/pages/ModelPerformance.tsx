@@ -27,9 +27,10 @@ export function ModelPerformance() {
           {[['Accuracy', selected?.accuracy], ['Precision', selected?.precision_macro], ['Recall', selected?.recall_macro], ['Macro F1', selected?.f1_macro]].map(([label, value]) => <div className="panel p-5" key={String(label)}><div className="text-xs text-slate-400">{label}</div><div className="text-2xl font-black text-cyan-300 mt-2">{percent(value as number | undefined)}</div></div>)}
         </div>
         <div className="grid md:grid-cols-2 gap-5">
-          <div className="panel p-5"><div className="flex items-center gap-2 font-bold"><Database size={16}/>Dataset evidence</div><dl className="mt-4 text-sm space-y-2 text-slate-300"><div>Records: {data.dataset_records}</div><div>Train/Test: {data.train_records} / {data.test_records}</div><div>Labels: {data.labels?.join(', ')}</div><div>Model: {data.selected_model}</div></dl></div>
+          <div className="panel p-5"><div className="flex items-center gap-2 font-bold"><Database size={16}/>Dataset evidence</div><dl className="mt-4 text-sm space-y-2 text-slate-300"><div>Corpus: {data.dataset_name || 'User-supplied corpus'}</div><div>Records: {data.dataset_records}</div><div>Train/Test: {data.train_records} / {data.test_records}</div><div>Labels: {data.labels?.join(', ')}</div><div>Model: {data.selected_model}</div>{data.dataset_citation && <div className="text-xs text-slate-400 break-words">Citation: {data.dataset_citation}</div>}</dl></div>
           <div className="panel p-5"><div className="flex items-center gap-2 font-bold"><ShieldCheck size={16}/>Validation status</div><div className="mt-4 font-mono text-cyan-300">{data.validation_status}</div><p className="text-sm text-slate-400 mt-3">{data.limitations}</p></div>
         </div>
+        {data.label_scope && <div className="panel p-5 border border-amber-500/20"><div className="flex items-center gap-2 font-bold text-amber-300"><AlertTriangle size={16}/>Label scope</div><p className="text-sm text-slate-400 mt-3">{data.label_scope}</p></div>}
       </>}
     </div>
   );

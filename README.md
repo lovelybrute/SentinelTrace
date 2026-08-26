@@ -132,6 +132,18 @@ python ml/prepare_dataset.py --legitimate-dir data/ham --phishing-dir data/phish
 python ml/train_model.py
 ```
 
+Parquet corpora are supported as an optional training input:
+
+```bash
+pip install -r requirements-ml.txt
+python ml/prepare_dataset.py --parquet data/corpus.parquet --output ml/datasets/prepared.jsonl
+python ml/train_model.py --dataset ml/datasets/prepared.jsonl
+```
+
+Raw corpora, prepared records, and trained artifacts are intentionally excluded
+from Git. Record the corpus citation and label taxonomy when training so the UI
+does not imply broader validation than the source labels support.
+
 Open **Model Performance** in the dashboard to see held-out precision, recall, macro F1, class support, and validation status. The backend activates the saved classifier only after minimum held-out support is met; smaller experiments remain labeled as prototypes. See `ml/README.md`.
 
 ---

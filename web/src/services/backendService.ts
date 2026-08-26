@@ -102,6 +102,10 @@ export interface ModelMetrics {
   message?: string;
   trained_at?: string;
   dataset_records?: number;
+  dataset_name?: string;
+  dataset_citation?: string;
+  source_distribution?: Record<string, number>;
+  label_scope?: string;
   train_records?: number;
   test_records?: number;
   labels?: string[];

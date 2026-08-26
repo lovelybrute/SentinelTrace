@@ -5,6 +5,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from collections import Counter
 
 import joblib
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -32,9 +33,16 @@ def main() -> None:
     p.add_argument("--dataset", type=Path, default=Path("ml/datasets/prepared.jsonl"))
     p.add_argument("--artifacts", type=Path, default=Path("ml/artifacts"))
     p.add_argument("--test-size", type=float, default=0.2)
+    p.add_argument("--dataset-name", default="User-supplied labeled corpus")
+    p.add_argument("--dataset-citation", default="Not supplied")
+    p.add_argument(
+        "--label-scope",
+        default="Labels are accepted as supplied; independently verify their taxonomy before deployment.",
+    )
     args = p.parse_args()
     rows = read_jsonl(args.dataset)
     texts, labels = [augment_text(r["text"]) for r in rows], [r["label"] for r in rows]
+    sources = Counter(str(r.get("source") or "unknown") for r in rows)
     classes = sorted(set(labels))
     if len(classes) < 2 or min(labels.count(c) for c in classes) < 5:
         raise SystemExit("Need at least two labels and five deduplicated records per label.")
@@ -58,6 +66,10 @@ def main() -> None:
         "trained_at": datetime.now(timezone.utc).isoformat(),
         "dataset_sha256": dataset_sha,
         "dataset_records": len(rows),
+        "dataset_name": args.dataset_name,
+        "dataset_citation": args.dataset_citation,
+        "source_distribution": dict(sorted(sources.items())),
+        "label_scope": args.label_scope,
         "train_records": len(y_train),
         "test_records": len(y_test),
         "labels": classes,
@@ -66,7 +78,11 @@ def main() -> None:
         "selected_model": winner,
         "feature_contract": "sentineltrace_text_v1",
         "models": results,
-        "limitations": "Holdout results apply only to the supplied corpus; cross-dataset validation is still recommended.",
+        "limitations": (
+            "Holdout results apply only to the supplied corpus. Random holdout can overestimate "
+            "generalization when messages share corpus-specific patterns; independent cross-dataset "
+            "and recent real-world validation remain required."
+        ),
     }
     args.artifacts.mkdir(parents=True, exist_ok=True)
     model_path = args.artifacts / "phishing_model.joblib"
