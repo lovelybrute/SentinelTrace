@@ -5,8 +5,8 @@ import { fileURLToPath, URL } from 'node:url';
 /**
  * SENTINELTRACE frontend build configuration.
  *
- * Optimized chunk splitting for React, Three.js, Recharts, and D3 dependencies
- * to ensure fast initial page load and on-demand forensic module execution.
+ * Configured with host: true to automatically expose Network host links
+ * and proxy /api requests to the FastAPI backend.
  */
 export default defineConfig({
   plugins: [react()],
@@ -16,9 +16,10 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // Listen on all addresses (0.0.0.0) to provide network host link
     port: 5173,
-    host: '127.0.0.1',
-    strictPort: true,
+    strictPort: false,
+    cors: true,
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:8000',
@@ -26,6 +27,12 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
+  },
+  preview: {
+    host: true,
+    port: 4173,
+    strictPort: false,
+    cors: true,
   },
   build: {
     outDir: 'dist',

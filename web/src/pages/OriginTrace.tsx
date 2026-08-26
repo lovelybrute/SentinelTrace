@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Globe, Shield, AlertTriangle, Info,
@@ -9,7 +9,7 @@ import { useAnalysis } from '@/context/AnalysisContext';
 import { DEMO_EMAIL_RAW, DEMO_EMAIL_FILENAME } from '@/demo/demoEmail';
 import { analyseEmail } from '@/services/analysisService';
 import { useSession } from '@/context/SessionContext';
-import { InteractiveGlobe3D } from '@/components/3d/InteractiveGlobe3D';
+const InteractiveGlobe3DLazy = React.lazy(() => import('@/components/3d/InteractiveGlobe3D').then(m => ({ default: m.InteractiveGlobe3D })));
 import type { RelayHop } from '@/types';
 
 export function OriginTrace() {
@@ -118,7 +118,7 @@ export function OriginTrace() {
           </div>
 
           <div className="flex-1 min-h-[420px]">
-            <InteractiveGlobe3D locations={globeLocations} />
+            <Suspense fallback={<div className="h-[420px] flex items-center justify-center text-center text-slate-500">Loading Infrastructure Globe...</div>}><InteractiveGlobe3DLazy locations={globeLocations} /></Suspense>
           </div>
         </div>
 

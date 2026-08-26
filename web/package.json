@@ -6,8 +6,10 @@
   "description": "SENTINELTRACE — AI-Powered Email Threat Detection & Forensic Intelligence Platform (SIH 26106)",
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "preview:host": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

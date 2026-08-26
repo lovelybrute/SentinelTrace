@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Shield,
@@ -18,7 +18,7 @@ import {
   Terminal,
   Activity,
 } from 'lucide-react';
-import { HeroNetwork3D } from '@/components/3d/HeroNetwork3D';
+const HeroNetwork3DLazy = React.lazy(() => import('@/components/3d/HeroNetwork3D').then(m => ({ default: m.HeroNetwork3D })));
 import { DEMO_EMAIL_RAW, DEMO_EMAIL_FILENAME } from '@/demo/demoEmail';
 import { analyseEmail } from '@/services/analysisService';
 import { useAnalysis } from '@/context/AnalysisContext';
@@ -136,7 +136,7 @@ export function Landing() {
 
         {/* 3D Cyber Network Canvas */}
         <div className="w-full max-w-5xl h-[480px] mt-12 z-10 rounded-2xl border border-cyan-500/20 bg-[#080e21]/40 backdrop-blur-md shadow-[0_0_50px_rgba(0,0,0,0.8)] overflow-hidden">
-          <HeroNetwork3D onSelectNode={(label) => console.log('Node selected:', label)} />
+          <Suspense fallback={<div className="h-[480px] flex items-center justify-center text-center text-slate-500">Initializing 3D Cyber Network Engine...</div>}><HeroNetwork3DLazy onSelectNode={(label) => console.log('Node selected:', label)} /></Suspense>
         </div>
       </section>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Shield, Globe, Wifi, AlertTriangle, CheckCircle,
@@ -8,7 +8,7 @@ import { useAnalysis } from '@/context/AnalysisContext';
 import { DEMO_EMAIL_RAW, DEMO_EMAIL_FILENAME } from '@/demo/demoEmail';
 import { analyseEmail } from '@/services/analysisService';
 import { useSession } from '@/context/SessionContext';
-import { InteractiveGlobe3D } from '@/components/3d/InteractiveGlobe3D';
+const InteractiveGlobe3DLazy = React.lazy(() => import('@/components/3d/InteractiveGlobe3D').then(m => ({ default: m.InteractiveGlobe3D })));
 import type { Severity, DomainIntelligence, IpIntelligence } from '@/types';
 
 export function ThreatIntelligence() {
@@ -116,7 +116,7 @@ export function ThreatIntelligence() {
       {/* Global 3D Observed Infrastructure Globe */}
       <div>
         <div className="section-title mb-2">Global 3D Infrastructure Map</div>
-        <InteractiveGlobe3D locations={globePoints} highlightIp={activeIp?.ip} />
+        <Suspense fallback={<div className="h-[420px] flex items-center justify-center text-center text-slate-500">Loading Global Infrastructure Map...</div>}><InteractiveGlobe3DLazy locations={globePoints} highlightIp={activeIp?.ip} /></Suspense>
       </div>
 
       {/* Section 1: Domain Intelligence */}

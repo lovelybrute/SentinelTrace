@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Network, Shield, Eye, ZoomIn, ZoomOut, RotateCcw,
@@ -8,7 +8,8 @@ import { useAnalysis } from '@/context/AnalysisContext';
 import { DEMO_EMAIL_RAW, DEMO_EMAIL_FILENAME } from '@/demo/demoEmail';
 import { analyseEmail } from '@/services/analysisService';
 import { useSession } from '@/context/SessionContext';
-import { ThreatGraph3D, GraphNodeData, GraphLinkData } from '@/components/3d/ThreatGraph3D';
+import type { GraphNodeData, GraphLinkData } from '@/components/3d/ThreatGraph3D';
+const ThreatGraph3DLazy = React.lazy(() => import('@/components/3d/ThreatGraph3D').then(m => ({ default: m.ThreatGraph3D })));
 import type { GraphNode, GraphEdge, GraphNodeKind, Severity } from '@/types';
 
 interface SimNode extends GraphNode {
@@ -165,7 +166,7 @@ export function GraphInvestigation() {
       {/* Graph Display Area */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 panel p-0 overflow-hidden border-cyan-500/25 h-[520px]">
-          <ThreatGraph3D
+          <Suspense fallback={<div className="h-[520px] flex items-center justify-center text-center text-slate-500">Loading Forensic Relationship Graph...</div>}><ThreatGraph3DLazy
             nodes={graph3DNodes}
             links={graph3DLinks}
             onSelectNode={(n) => {
@@ -177,8 +178,7 @@ export function GraphInvestigation() {
                 attributes: { Type: n.category, Name: n.name },
                 expandable: false,
               });
-            }}
-          />
+            }} /></Suspense>
         </div>
 
         {/* Selected Entity Details Panel */}
