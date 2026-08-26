@@ -1,0 +1,120 @@
+{
+  "validation_status": "VALIDATED_HOLDOUT",
+  "trained_at": "2026-08-26T15:17:15.535914+00:00",
+  "dataset_sha256": "4f063f18ae79f560a25b3edb9b28d1c1d3873e2e4df97b2e3ad6a7fb1d18ed35",
+  "dataset_records": 106159,
+  "dataset_name": "MeAJOR v2.0 cleaned/preprocessed corpus",
+  "dataset_citation": "Cardoso et al., MeAJOR, Zenodo DOI 10.5281/zenodo.18471483 (2026)",
+  "source_distribution": {
+    "trec5": 47293,
+    "trec6": 14932,
+    "trec7": 43934
+  },
+  "label_scope": "Publisher labels map 0 to benign and 1 to phishing; this uploaded release contains TREC-5/6/7 sources, whose positive class includes broad unsolicited/malicious email and is therefore a phishing-proxy label rather than confirmed phishing-only ground truth.",
+  "train_records": 84927,
+  "test_records": 21232,
+  "labels": [
+    "LEGITIMATE",
+    "PHISHING"
+  ],
+  "test_class_distribution": {
+    "LEGITIMATE": 11661,
+    "PHISHING": 9571
+  },
+  "split": {
+    "method": "deduplicated stratified holdout",
+    "random_state": 42,
+    "test_size": 0.2
+  },
+  "selected_model": "logistic_regression",
+  "feature_contract": "sentineltrace_text_v1",
+  "models": {
+    "logistic_regression": {
+      "accuracy": 0.9874,
+      "precision_macro": 0.9871,
+      "recall_macro": 0.9874,
+      "f1_macro": 0.9873,
+      "confusion_matrix": [
+        [
+          11509,
+          152
+        ],
+        [
+          116,
+          9455
+        ]
+      ],
+      "classification_report": {
+        "LEGITIMATE": {
+          "precision": 0.990021505376344,
+          "recall": 0.9869650973329903,
+          "f1-score": 0.9884909387614876,
+          "support": 11661.0
+        },
+        "PHISHING": {
+          "precision": 0.984178203393359,
+          "recall": 0.987880054330791,
+          "f1-score": 0.9860256543956617,
+          "support": 9571.0
+        },
+        "accuracy": 0.9873775433308214,
+        "macro avg": {
+          "precision": 0.9870998543848515,
+          "recall": 0.9874225758318906,
+          "f1-score": 0.9872582965785747,
+          "support": 21232.0
+        },
+        "weighted avg": {
+          "precision": 0.9873874509641761,
+          "recall": 0.9873775433308214,
+          "f1-score": 0.9873796333420586,
+          "support": 21232.0
+        }
+      }
+    },
+    "sgd_log_loss": {
+      "accuracy": 0.9802,
+      "precision_macro": 0.9799,
+      "recall_macro": 0.9801,
+      "f1_macro": 0.98,
+      "confusion_matrix": [
+        [
+          11442,
+          219
+        ],
+        [
+          201,
+          9370
+        ]
+      ],
+      "classification_report": {
+        "LEGITIMATE": {
+          "precision": 0.9827364081422314,
+          "recall": 0.9812194494468742,
+          "f1-score": 0.981977342945417,
+          "support": 11661.0
+        },
+        "PHISHING": {
+          "precision": 0.9771613306914172,
+          "recall": 0.9789990596593877,
+          "f1-score": 0.9780793319415448,
+          "support": 9571.0
+        },
+        "accuracy": 0.9802185380557649,
+        "macro avg": {
+          "precision": 0.9799488694168244,
+          "recall": 0.9801092545531309,
+          "f1-score": 0.980028337443481,
+          "support": 21232.0
+        },
+        "weighted avg": {
+          "precision": 0.980223264477869,
+          "recall": 0.9802185380557649,
+          "f1-score": 0.9802201903776863,
+          "support": 21232.0
+        }
+      }
+    }
+  },
+  "limitations": "Holdout results apply only to the supplied corpus. Random holdout can overestimate generalization when messages share corpus-specific patterns; independent cross-dataset and recent real-world validation remain required."
+}
