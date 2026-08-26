@@ -6,19 +6,25 @@
 - Communication: REST APIs (JSON)
 
 ## 2. Features fully completed
-- None in the UI overhaul yet.
+- Phase 1: Core setup and design system.
+- Phase 2: Navigation and application shell.
+- Phase 3: Cinematic intro with session gating, skip/replay controls, reduced-motion handling, and a mobile 2D fallback.
+- Phase 4: Cyber Command Center dashboard with lazy-loaded threat globe, backend-backed metrics, explicit demo fallbacks, recent-threat rail, and `.eml` upload actions.
 
 ## 3. Features partially completed
-- Phase 1: Core Setup & Design System (Tailwind tokens updated)
+- None in Phases 1–4.
 
 ## 4. Features not yet started
-- Cinematic Intro
-- Main Dashboard (Cyber Command Center)
 - Email Analyzer (Holographic Forensic Lab)
 - Forensic Modules (Intelligence OS)
 
 ## 5. Files created or modified
-- web/tailwind.config.js (Updated colors)
+- web/tailwind.config.js (updated colors)
+- web/src/components/intro/TeamBruteIntro.tsx (cinematic intro)
+- web/src/components/dashboard/ThreatGlobe.tsx (interactive threat globe)
+- web/src/pages/Dashboard.tsx (Cyber Command Center)
+- web/src/App.tsx (session-gated intro)
+- web/src/pages/Settings.tsx (intro controls)
 - AI_HANDOFF.md (Created)
 - TASK_PROGRESS.md (Created)
 
@@ -35,10 +41,18 @@
 - Frontend: start_frontend.bat or cd web && npm run dev
 
 ## 9. Current build, lint and test results
-- To be determined.
+- `npm run typecheck`: pass.
+- `npm run build`: pass.
+- No frontend lint script is currently configured.
+- Backend API health, stats, and case-lifecycle tests pass (3/3).
+- Backend offline unit tests pass 14/15; the existing private-IP SPF test expects `NEUTRAL` but currently receives `NONE`. This was not introduced by the frontend work.
+- pytest and its compatible httpx test dependency are not listed in requirements.txt.
+- Vite reports a non-blocking circular/manual chunk warning and a large Three.js vendor chunk.
 
 ## 10. Known bugs and remaining tasks
-- Remaining tasks tracked in 	ask.md (Artifact).
+- Complete Phase 5 and Phase 6.
+- Consider refining Vite vendor chunking to reduce the Three.js chunk size.
+- Add a frontend lint script and development test dependencies.
 
 ## 11. The exact next implementation step
-- Refine web/src/styles.css with glow effects and custom scrollbars.
+- Begin Phase 5: Holographic Forensic Lab email analyzer, preserving the existing backend response contracts.

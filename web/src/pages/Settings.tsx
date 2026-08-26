@@ -152,7 +152,7 @@ export function Settings() {
             <div className="p-3.5 rounded-lg bg-[#050a18] border border-cyan-500/20 flex items-center justify-between">
               <div>
                 <div className="text-xs font-mono font-bold text-slate-200">Replay Cinematic Intro</div>
-                <div className="text-[10px] text-slate-500 font-mono">Run the 3.0s Team Brute startup sequence manually</div>
+                <div className="text-[10px] text-slate-500 font-mono">Run the full cinematic Team Brute startup sequence manually</div>
               </div>
               <button
                 onClick={handleTriggerReplay}

@@ -344,7 +344,6 @@ interface TeamBruteIntroProps {
 
 export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntroProps) {
   const [stage, setStage] = useState(0);
-  const [done, setDone] = useState(false);
 
   // Detect mobile / low-perf: skip WebGL canvas on small screens
   const isMobile = window.innerWidth < 768;
@@ -353,12 +352,7 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
     [],
   );
 
-  const complete = useStableCallback(() => {
-    setDone(true);
-    // Small fade-out, then call parent
-    const id: TimerId = setTimeout(onComplete, 700);
-    return () => clearTimeout(id);
-  });
+  const complete = useStableCallback(onComplete);
 
   const handleSkip = useStableCallback(() => {
     onComplete();
@@ -381,12 +375,13 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
       setTimeout(() => setStage(2), 1400),   // network glow
       setTimeout(() => setStage(3), 2600),   // hostile intercept
       setTimeout(() => setStage(4), 3800),   // scanning panel
-      setTimeout(() => setStage(5), 7000),   // holographic earth
-      setTimeout(() => setStage(6), 8200),   // threat score
-      setTimeout(() => setStage(7), 9600),   // shield materialise
-      setTimeout(() => setStage(8), 10600),  // logo text
-      setTimeout(() => setStage(9), 11400),  // tagline
-      setTimeout(() => complete(), 12800),   // fade → dashboard
+      setTimeout(() => setStage(5), 6500),   // holographic earth
+      setTimeout(() => setStage(6), 7600),   // threat score
+      setTimeout(() => setStage(7), 8900),   // shield materialise
+      setTimeout(() => setStage(8), 9700),   // logo text
+      setTimeout(() => setStage(9), 10400),  // tagline
+      setTimeout(() => setStage(10), 11200), // fade → dashboard
+      setTimeout(() => complete(), 11900),   // unmount after fade
     ];
 
     return () => timers.forEach(clearTimeout);
@@ -400,8 +395,6 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
-
-  if (done) return null;
 
   return (
     <motion.div

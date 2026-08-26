@@ -11,6 +11,7 @@
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Globe from 'react-globe.gl';
+import type { GlobeMethods } from 'react-globe.gl';
 
 /* ── Country centroid lookup for globe point positioning ── */
 const COUNTRY_COORDS: Record<string, [number, number]> = {
@@ -72,7 +73,7 @@ function scoreColor(score: number): string {
 }
 
 export default function ThreatGlobe({ countryThreats, width, height = 420 }: ThreatGlobeProps) {
-  const globeRef = useRef<any>(null);
+  const globeRef = useRef<GlobeMethods>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(width ?? 500);
   const [arcsData, setArcsData] = useState<ArcDatum[]>([]);
@@ -184,7 +185,15 @@ export default function ThreatGlobe({ countryThreats, width, height = 420 }: Thr
   const isDemoMode = !countryThreats || countryThreats.length === 0;
 
   return (
-    <div ref={containerRef} className="relative w-full" style={{ height }}>
+    <div
+      ref={containerRef}
+      className="relative w-full"
+      style={{ height }}
+      onPointerMove={(event) => {
+        if (tooltip) setTooltipPos({ x: event.clientX, y: event.clientY });
+      }}
+      onPointerLeave={() => setTooltip(null)}
+    >
       <Globe
         ref={globeRef}
         width={containerWidth}
@@ -215,10 +224,8 @@ export default function ThreatGlobe({ countryThreats, width, height = 420 }: Thr
           const p = pt as PointDatum;
           setTooltip(p);
         }}
-        onPointHover={(pt, _prev, ev) => {
-          const p = pt as PointDatum | null;
-          setTooltip(p);
-          if (ev && p) setTooltipPos({ x: ev.clientX, y: ev.clientY });
+        onPointHover={(pt: object | null) => {
+          setTooltip(pt as PointDatum | null);
         }}
       />
 

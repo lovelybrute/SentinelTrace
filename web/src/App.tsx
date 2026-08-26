@@ -2,7 +2,6 @@ import React, { Suspense, useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useSession } from '@/context/SessionContext';
 import { Layout } from '@/components/shell/Layout';
-import { TeamBruteIntro } from '@/components/intro/TeamBruteIntro';
 import { Shield } from 'lucide-react';
 
 // Route-Level Lazy Loading
@@ -21,6 +20,9 @@ const ForensicReports = React.lazy(() => import('@/pages/ForensicReports').then(
 const AlertCenter = React.lazy(() => import('@/pages/AlertCenter').then(m => ({ default: m.AlertCenter })));
 const Analytics = React.lazy(() => import('@/pages/Analytics').then(m => ({ default: m.Analytics })));
 const Settings = React.lazy(() => import('@/pages/Settings').then(m => ({ default: m.Settings })));
+const TeamBruteIntro = React.lazy(() =>
+  import('@/components/intro/TeamBruteIntro').then(m => ({ default: m.TeamBruteIntro })),
+);
 
 function LoadingFallback() {
   return (
@@ -58,7 +60,9 @@ export default function App() {
     <>
       {/* Cinematic Startup Sequence (First visit or manual trigger) */}
       {showIntro && (
-        <TeamBruteIntro onComplete={() => setShowIntro(false)} />
+        <Suspense fallback={<div className="fixed inset-0 z-[9999] bg-[#02070D]" aria-label="Loading cinematic intro" />}>
+          <TeamBruteIntro onComplete={() => setShowIntro(false)} />
+        </Suspense>
       )}
 
       {/* Main Application with Lazy Route Suspense */}
