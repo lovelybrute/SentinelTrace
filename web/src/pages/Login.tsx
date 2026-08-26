@@ -374,12 +374,21 @@ export function Login() {
           )}
         </div>
 
+
         <div
-          className="text-center mt-5"
-          style={{ fontSize: 11, color: 'var(--color-text-muted)' }}
-        >
-          SentinelTrace v1.0 · SIH 26106 · CERT-In Aligned
-        </div>
+  className="text-center mt-5"
+  style={{ fontSize: 11, color: 'var(--color-text-muted)' }}
+>
+  <div style={{ fontWeight: 700, color: '#22d3ee', marginBottom: 4 }}>
+    Team Brute
+  </div>
+  <div>
+    Team Leader: Pavan
+  </div>
+  <div style={{ marginTop: 4 }}>
+    SentinelTrace v1.0 · SIH 26106 · CERT-In Aligned
+  </div>
+</div>
       </div>
     </div>
   );

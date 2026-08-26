@@ -161,6 +161,25 @@
             font-weight: 700;
             letter-spacing: -0.5px;
         }
+        .project-badge {
+        display: inline-block;
+        margin: 0 auto 15px;
+        padding: 8px 18px;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+        font-size: 0.85em;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .project-badge span {
+       margin: 0 6px;
+       opacity: 0.7;
+        }
 
         .header p {
             color: rgba(255, 255, 255, 0.95);
@@ -666,9 +685,14 @@
 
     <div class="container">
         <div class="header">
-            <h1>🛡️ SentinelTrace AI</h1>
-            <p>AI-Powered Email Threat Detection, Geolocation & Forensic Intelligence Platform</p>
-        </div>
+    <h1>🛡️ SentinelTrace AI</h1>
+
+    <div class="project-badge">
+        SIH PROJECT <span>•</span> TEAM BRUTE
+    </div>
+
+    <p>AI-Powered Email Threat Detection, Geolocation & Forensic Intelligence Platform</p>
+</div>
 
         <!-- Analyzer Section -->
         <div id="analyzer" class="panel" style="grid-column: 1 / -1;">
