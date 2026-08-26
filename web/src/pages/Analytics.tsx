@@ -6,6 +6,7 @@ import {
 import { BarChart3, TrendingUp, Shield, Globe, Lock, Activity, Calendar } from 'lucide-react';
 import { mockAnalytics } from '@/services/mockDataService';
 import type { TimeRange } from '@/types';
+import { SocThreatPosture } from '@/components/forensics/SocThreatPosture';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Business Email Compromise': '#ef4444',
@@ -21,7 +22,7 @@ export function Analytics() {
   const data = mockAnalytics(range);
 
   return (
-    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }} className="space-y-6">
       {/* Top Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
@@ -57,7 +58,7 @@ export function Analytics() {
       </div>
 
       {/* Grid: Row 1 — Threats Over Time & Threat Categories */}
-      <div className="grid gap-6 mb-6" style={{ gridTemplateColumns: 'minmax(350px, 1.8fr) minmax(300px, 1.2fr)' }}>
+      <div className="grid gap-6" style={{ gridTemplateColumns: 'minmax(350px, 1.8fr) minmax(300px, 1.2fr)' }}>
         {/* Threats Over Time Area Chart */}
         <div className="panel" style={{ padding: 20 }}>
           <div className="flex items-center justify-between mb-4">
@@ -98,65 +99,33 @@ export function Analytics() {
           <div className="section-title">Threats by Classification</div>
           <div style={{ width: '100%', height: 260 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.byCategory} layout="vertical" margin={{ left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis type="number" stroke="#475569" fontSize={10} />
-                <YAxis dataKey="category" type="category" stroke="#94a3b8" fontSize={10} width={130} />
-                <Tooltip
-                  contentStyle={{ background: '#0a0f1a', border: '1px solid rgba(34,211,238,0.2)', borderRadius: 6, fontSize: 11 }}
-                />
-                <Bar dataKey="count" name="Incidents" radius={[0, 4, 4, 0]}>
-                  {data.byCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.category] || '#22d3ee'} />
+              <PieChart>
+                <Pie
+                  data={data.byCategory}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={4}
+                  dataKey="count"
+                  nameKey="category"
+                >
+                  {data.byCategory.map(entry => (
+                    <Cell key={entry.category} fill={CATEGORY_COLORS[entry.category] || '#22d3ee'} />
                   ))}
-                </Bar>
-              </BarChart>
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: '#0a0f1a', border: '1px solid rgba(34,211,238,0.2)', borderRadius: 6, fontSize: 11 }}
+                />
+                <Legend wrapperStyle={{ fontSize: 10 }} />
+              </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Grid: Row 2 — Geopolitical Country Distribution & Authentication Failures */}
-      <div className="grid gap-6 mb-6" style={{ gridTemplateColumns: 'minmax(350px, 1.5fr) minmax(300px, 1.5fr)' }}>
-        {/* Country Ingress Distribution */}
-        <div className="panel" style={{ padding: 20 }}>
-          <div className="section-title">Top Threat Ingress Jurisdictions</div>
-          <div style={{ width: '100%', height: 240 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.countryDistribution}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="country" stroke="#94a3b8" fontSize={10} />
-                <YAxis stroke="#475569" fontSize={10} />
-                <Tooltip
-                  contentStyle={{ background: '#0a0f1a', border: '1px solid rgba(34,211,238,0.2)', borderRadius: 6, fontSize: 11 }}
-                />
-                <Bar dataKey="count" name="Observed Volume" fill="#22d3ee" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Authentication Failures (SPF/DKIM/DMARC) */}
-        <div className="panel" style={{ padding: 20 }}>
-          <div className="section-title">Email Protocol Authentication Failures</div>
-          <div style={{ width: '100%', height: 240 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.authFailures}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="mechanism" stroke="#94a3b8" fontSize={11} fontWeight={700} />
-                <YAxis stroke="#475569" fontSize={10} />
-                <Tooltip
-                  contentStyle={{ background: '#0a0f1a', border: '1px solid rgba(34,211,238,0.2)', borderRadius: 6, fontSize: 11 }}
-                />
-                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} />
-                <Bar dataKey="pass" name="Valid / Aligned" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="fail" name="Failed / Forged" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="softfail" name="Softfail" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
+      {/* Enterprise SOC Threat Posture Component */}
+      <SocThreatPosture />
 
       {/* Grid: Row 3 — Top Malicious Domains & High-Risk IPs */}
       <div className="grid gap-6" style={{ gridTemplateColumns: '1fr 1fr' }}>

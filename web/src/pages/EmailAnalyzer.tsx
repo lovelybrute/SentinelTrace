@@ -4,7 +4,7 @@ import {
   Upload, FileText, Play, AlertTriangle, CheckCircle, Clock,
   ChevronRight, Copy, Download, Shield, Zap, Search, FileSearch,
   RotateCcw, Info, ExternalLink, Sparkles, Network, Globe, GitBranch,
-  FolderPlus, Layers, FileCode
+  FolderPlus, Layers, FileCode, Dna, Compass, Crosshair, Package
 } from 'lucide-react';
 import { useAnalysis } from '@/context/AnalysisContext';
 import { useSession } from '@/context/SessionContext';
@@ -14,14 +14,24 @@ import { PIPELINE_STAGES, initialStageStates } from '@/lib/pipeline';
 import type { StageState } from '@/lib/pipeline';
 import type { EmailAnalysis, Severity } from '@/types';
 
+// Forensic Suite Components
+import { InvestigationMode } from '@/components/forensics/InvestigationMode';
+import { EvidenceConfidence } from '@/components/forensics/EvidenceConfidence';
+import { MitreAttackChain } from '@/components/forensics/MitreAttackChain';
+import { EmailDNA } from '@/components/forensics/EmailDNA';
+import { InfrastructureFingerprint } from '@/components/forensics/InfrastructureFingerprint';
+import { SimilarIncidents } from '@/components/forensics/SimilarIncidents';
+import { CampaignTimeline } from '@/components/forensics/CampaignTimeline';
+import { AnalystActionCenter } from '@/components/forensics/AnalystActionCenter';
+
 /* ------------------------------------------------------------------ */
-/* Pre-Configured Attack Samples                                       */
+/* Pre-Configured Attack Vectors                                       */
 /* ------------------------------------------------------------------ */
 
 const SAMPLE_ATTACK_VECTORS = [
   {
     name: 'Invoice Fraud (Lookalike Domain)',
-    category: 'BEC / Financial',
+    category: 'BEC / Financial Fraud',
     filename: 'invoice_fraud.eml',
     raw: `From: Accounts Receivable <billing@paypa1-security.com>
 To: procurement@victimcorp.com
@@ -224,12 +234,12 @@ function ThreatGauge({ score, level }: { score: number; level: Severity }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Upgraded Verdict Card with "WHY?" Factor Breakdown                  */
+/* Verdict Card with Start Investigation Action                        */
 /* ------------------------------------------------------------------ */
 
-function VerdictCard({ analysis }: { analysis: EmailAnalysis }) {
+function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalysis; onStartInvestigation: () => void }) {
   const navigate = useNavigate();
-  const { assessment, score, authentication, originAssessment } = analysis;
+  const { assessment, score } = analysis;
   const color = score.level === 'CRITICAL' ? '#ef4444' : score.level === 'HIGH' ? '#f97316' : score.level === 'MEDIUM' ? '#f59e0b' : '#22c55e';
   const classLabel = assessment.classification.replace(/_/g, ' ');
 
@@ -245,7 +255,7 @@ function VerdictCard({ analysis }: { analysis: EmailAnalysis }) {
         <div className="flex-1 space-y-4 w-full">
           <div>
             <div className="text-[10px] font-mono font-bold text-cyan-400 tracking-widest uppercase">
-              PRIMARY CLASSIFICATION
+              PRIMARY CLASSIFICATION & CONFIDENCE
             </div>
             <div className="text-2xl font-black tracking-tight text-white flex items-center gap-3 mt-1">
               <span>{classLabel}</span>
@@ -285,45 +295,39 @@ function VerdictCard({ analysis }: { analysis: EmailAnalysis }) {
           </div>
         </div>
 
-        {/* Fast Action Shortcuts */}
-        <div className="w-full lg:w-56 p-4 rounded-xl bg-[#080e21]/90 border border-cyan-500/20 space-y-2">
-          <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-2">
-            INVESTIGATION ACTIONS
+        {/* Guided Investigation Button & Shortcuts */}
+        <div className="w-full lg:w-64 p-4 rounded-xl bg-[#080e21]/90 border border-cyan-500/20 space-y-2.5">
+          <button
+            onClick={onStartInvestigation}
+            className="w-full btn-primary py-2.5 text-xs font-mono flex items-center justify-center gap-2 uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+          >
+            <Compass size={15} />
+            <span>START INVESTIGATION</span>
+          </button>
+
+          <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider pt-2">
+            DIRECT MODULE JUMP
           </div>
           <button
             onClick={() => navigate('/header-forensics')}
-            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+            className="w-full btn-ghost text-xs py-1.5 justify-start font-mono text-[11px]"
           >
             <FileCode size={13} className="text-cyan-400" />
             <span>Header Forensics</span>
           </button>
           <button
             onClick={() => navigate('/relay-chain')}
-            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+            className="w-full btn-ghost text-xs py-1.5 justify-start font-mono text-[11px]"
           >
             <GitBranch size={13} className="text-cyan-400" />
             <span>Relay Timeline</span>
           </button>
           <button
-            onClick={() => navigate('/origin-trace')}
-            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
-          >
-            <Globe size={13} className="text-cyan-400" />
-            <span>Origin Map</span>
-          </button>
-          <button
             onClick={() => navigate('/graph')}
-            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
+            className="w-full btn-ghost text-xs py-1.5 justify-start font-mono text-[11px]"
           >
             <Network size={13} className="text-cyan-400" />
             <span>3D Threat Graph</span>
-          </button>
-          <button
-            onClick={() => navigate('/cases')}
-            className="w-full btn-ghost text-xs py-2 justify-start font-mono text-[11px]"
-          >
-            <FolderPlus size={13} className="text-emerald-400" />
-            <span>Open SOC Case</span>
           </button>
         </div>
       </div>
@@ -351,7 +355,7 @@ function IocTable({ analysis }: { analysis: EmailAnalysis }) {
           EXTRACTED INDICATORS OF COMPROMISE ({analysis.iocs.length})
         </span>
         <span className="text-[10px] font-mono text-cyan-400">
-          Validated via Python ipaddress module
+          Normalized for SOC SIEM / SOAR Ingestion
         </span>
       </div>
 
@@ -438,6 +442,9 @@ export function EmailAnalyzer() {
   const [stages, setStages] = useState(initialStageStates());
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'paste' | 'upload'>('paste');
+  const [showInvestigationMode, setShowInvestigationMode] = useState(false);
+  const [activeForensicTab, setActiveForensicTab] = useState<'OVERVIEW' | 'EVIDENCE' | 'MITRE' | 'DNA' | 'INFRA' | 'SIMILAR' | 'TIMELINE'>('OVERVIEW');
+
   const abortRef = useRef<AbortController | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -501,11 +508,12 @@ export function EmailAnalyzer() {
     setStages(initialStageStates());
     setError(null);
     setRunning(false);
+    setShowInvestigationMode(false);
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
+      {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cyan-500/15 pb-5">
         <div>
           <div className="flex items-center gap-2">
@@ -520,10 +528,19 @@ export function EmailAnalyzer() {
         </div>
 
         {currentAnalysis && (
-          <button onClick={reset} className="btn-ghost flex items-center gap-2 text-xs font-mono">
-            <RotateCcw size={13} />
-            <span>NEW INVESTIGATION</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowInvestigationMode(true)}
+              className="btn-primary text-xs font-mono flex items-center gap-2 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+            >
+              <Compass size={14} />
+              <span>START INVESTIGATION</span>
+            </button>
+            <button onClick={reset} className="btn-ghost flex items-center gap-2 text-xs font-mono">
+              <RotateCcw size={13} />
+              <span>NEW INGESTION</span>
+            </button>
+          </div>
         )}
       </div>
 
@@ -641,8 +658,120 @@ export function EmailAnalyzer() {
       {/* Results View */}
       {currentAnalysis && !running && (
         <div className="space-y-6">
-          <VerdictCard analysis={currentAnalysis} />
-          <IocTable analysis={currentAnalysis} />
+          {/* Action Center & Verdict */}
+          <VerdictCard
+            analysis={currentAnalysis}
+            onStartInvestigation={() => setShowInvestigationMode(true)}
+          />
+
+          <AnalystActionCenter
+            analysis={currentAnalysis}
+            onOpenCaseModal={() => navigate('/cases')}
+          />
+
+          {/* Forensic Suite Navigation Tabs */}
+          <div className="flex flex-wrap border-b border-cyan-500/20 bg-[#050a18] rounded-xl p-1.5 gap-1 font-mono text-xs">
+            <button
+              onClick={() => setActiveForensicTab('OVERVIEW')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                activeForensicTab === 'OVERVIEW' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              📊 OVERVIEW & IOCs
+            </button>
+            <button
+              onClick={() => setActiveForensicTab('EVIDENCE')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                activeForensicTab === 'EVIDENCE' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🛡️ EVIDENCE CONFIDENCE
+            </button>
+            <button
+              onClick={() => setActiveForensicTab('MITRE')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                activeForensicTab === 'MITRE' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🎯 MITRE ATT&CK CHAIN
+            </button>
+            <button
+              onClick={() => setActiveForensicTab('DNA')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                activeForensicTab === 'DNA' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🧬 EMAIL DNA
+            </button>
+            <button
+              onClick={() => setActiveForensicTab('INFRA')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                activeForensicTab === 'INFRA' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🌐 INFRASTRUCTURE PROFILE
+            </button>
+            <button
+              onClick={() => setActiveForensicTab('SIMILAR')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                activeForensicTab === 'SIMILAR' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🔍 SIMILAR INCIDENTS
+            </button>
+            <button
+              onClick={() => setActiveForensicTab('TIMELINE')}
+              className={`px-4 py-2 rounded-lg font-bold transition-all ${
+                activeForensicTab === 'TIMELINE' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ⏱️ CAMPAIGN TIMELINE
+            </button>
+          </div>
+
+          {/* Active Tab Content */}
+          {activeForensicTab === 'OVERVIEW' && (
+            <div className="space-y-6 animate-fade-in">
+              <IocTable analysis={currentAnalysis} />
+              <EvidenceConfidence analysis={currentAnalysis} />
+            </div>
+          )}
+
+          {activeForensicTab === 'EVIDENCE' && (
+            <div className="animate-fade-in">
+              <EvidenceConfidence analysis={currentAnalysis} />
+            </div>
+          )}
+
+          {activeForensicTab === 'MITRE' && (
+            <div className="animate-fade-in">
+              <MitreAttackChain analysis={currentAnalysis} />
+            </div>
+          )}
+
+          {activeForensicTab === 'DNA' && (
+            <div className="animate-fade-in">
+              <EmailDNA analysis={currentAnalysis} />
+            </div>
+          )}
+
+          {activeForensicTab === 'INFRA' && (
+            <div className="animate-fade-in">
+              <InfrastructureFingerprint analysis={currentAnalysis} />
+            </div>
+          )}
+
+          {activeForensicTab === 'SIMILAR' && (
+            <div className="animate-fade-in">
+              <SimilarIncidents analysis={currentAnalysis} />
+            </div>
+          )}
+
+          {activeForensicTab === 'TIMELINE' && (
+            <div className="animate-fade-in">
+              <CampaignTimeline analysis={currentAnalysis} />
+            </div>
+          )}
 
           {/* Chain of Custody Card */}
           <div className="panel p-5 border-cyan-500/20 bg-[#080e21]">
@@ -685,6 +814,15 @@ export function EmailAnalyzer() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Guided Investigation Mode Fullscreen Stepper Overlay */}
+      {showInvestigationMode && currentAnalysis && (
+        <InvestigationMode
+          analysis={currentAnalysis}
+          onClose={() => setShowInvestigationMode(false)}
+          onNavigateToModule={(route) => navigate(route)}
+        />
       )}
     </div>
   );

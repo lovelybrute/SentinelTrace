@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Layers, Shield, AlertTriangle, Users, Globe,
-  Wifi, Calendar, ChevronRight, Activity, Search, Filter
+  Wifi, Calendar, ChevronRight, Activity, Search, Filter, Clock
 } from 'lucide-react';
 import { MOCK_CAMPAIGNS } from '@/services/mockDataService';
 import type { Campaign, Severity } from '@/types';
+import { CampaignTimeline } from '@/components/forensics/CampaignTimeline';
 
 export function CampaignIntelligence() {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export function CampaignIntelligence() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }} className="space-y-6">
       {/* Top Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
@@ -132,117 +133,122 @@ export function CampaignIntelligence() {
 
         {/* Campaign Detailed Inspector */}
         {selectedCampaign && (
-          <div className="panel" style={{ padding: 24 }}>
-            <div className="flex items-start justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
-              <div>
-                <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#22d3ee', fontWeight: 800 }}>
-                  CAMPAIGN #{selectedCampaign.id}
-                </span>
-                <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--color-text)', marginTop: 2 }}>
-                  {selectedCampaign.name}
-                </h2>
-                <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
-                  Classification: <strong>{selectedCampaign.classification.replace(/_/g, ' ')}</strong> · Status: <span style={{ color: '#22c55e', fontWeight: 700 }}>{selectedCampaign.status}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => navigate('/cases')}
-                className="btn-primary flex items-center gap-1.5 text-xs"
-              >
-                <span>Open Incident Case</span>
-                <ChevronRight size={13} />
-              </button>
-            </div>
-
-            {/* Campaign Metrics */}
-            <div className="grid grid-cols-4 gap-3 mb-6">
-              {[
-                { label: 'Related Emails', val: selectedCampaign.emailCount, col: '#22d3ee' },
-                { label: 'Observed Domains', val: selectedCampaign.domainCount, col: '#ef4444' },
-                { label: 'Relay IPs', val: selectedCampaign.ipCount, col: '#f59e0b' },
-                { label: 'Target Organizations', val: selectedCampaign.victimCount, col: '#fca5a5' },
-              ].map(m => (
-                <div key={m.label} className="panel-elevated" style={{ padding: 12, textAlign: 'center' }}>
-                  <div className="label">{m.label}</div>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: m.col, marginTop: 4 }}>{m.val}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Narrative Summary */}
-            <div className="mb-6">
-              <div className="label mb-1">Threat Actor & Modus Operandi</div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-dim)', lineHeight: 1.6, background: 'rgba(0,0,0,0.2)', padding: 14, borderRadius: 8, border: '1px solid var(--color-border)' }}>
-                {selectedCampaign.summary}
-              </div>
-            </div>
-
-            {/* Clustering Basis */}
-            <div className="mb-6">
-              <div className="label mb-2">Cluster Correlation Basis</div>
-              <div className="flex flex-wrap gap-2">
-                {selectedCampaign.clusterBasis.map((b, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontSize: 11,
-                      padding: '4px 10px',
-                      borderRadius: 4,
-                      background: 'rgba(34,211,238,0.1)',
-                      border: '1px solid rgba(34,211,238,0.25)',
-                      color: '#22d3ee',
-                      fontWeight: 600,
-                    }}
-                  >
-                    ✓ {b}
+          <div className="space-y-6">
+            <div className="panel" style={{ padding: 24 }}>
+              <div className="flex items-start justify-between pb-4 mb-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <div>
+                  <span style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#22d3ee', fontWeight: 800 }}>
+                    CAMPAIGN #{selectedCampaign.id}
                   </span>
+                  <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--color-text)', marginTop: 2 }}>
+                    {selectedCampaign.name}
+                  </h2>
+                  <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
+                    Classification: <strong>{selectedCampaign.classification.replace(/_/g, ' ')}</strong> · Status: <span style={{ color: '#22c55e', fontWeight: 700 }}>{selectedCampaign.status}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate('/cases')}
+                  className="btn-primary flex items-center gap-1.5 text-xs font-mono"
+                >
+                  <span>Open Incident Case</span>
+                  <ChevronRight size={13} />
+                </button>
+              </div>
+
+              {/* Campaign Metrics */}
+              <div className="grid grid-cols-4 gap-3 mb-6">
+                {[
+                  { label: 'Related Emails', val: selectedCampaign.emailCount, col: '#22d3ee' },
+                  { label: 'Observed Domains', val: selectedCampaign.domainCount, col: '#ef4444' },
+                  { label: 'Relay IPs', val: selectedCampaign.ipCount, col: '#f59e0b' },
+                  { label: 'Target Organizations', val: selectedCampaign.victimCount, col: '#fca5a5' },
+                ].map(m => (
+                  <div key={m.label} className="panel-elevated" style={{ padding: 12, textAlign: 'center' }}>
+                    <div className="label">{m.label}</div>
+                    <div style={{ fontSize: 20, fontWeight: 900, color: m.col, marginTop: 4 }}>{m.val}</div>
+                  </div>
                 ))}
               </div>
-            </div>
 
-            {/* Correlated Domains & IPs */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <div className="label mb-2">Associated Lookalike Domains</div>
-                <div className="flex flex-col gap-1.5">
-                  {selectedCampaign.topDomains.map(d => (
-                    <div key={d} className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-                      <span style={{ color: '#fca5a5' }}>{d}</span>
-                      <span style={{ fontSize: 9, color: '#ef4444', fontWeight: 700 }}>MALICIOUS</span>
-                    </div>
+              {/* Narrative Summary */}
+              <div className="mb-6">
+                <div className="label mb-1">Threat Actor & Modus Operandi</div>
+                <div style={{ fontSize: 13, color: 'var(--color-text-dim)', lineHeight: 1.6, background: 'rgba(0,0,0,0.2)', padding: 14, borderRadius: 8, border: '1px solid var(--color-border)' }}>
+                  {selectedCampaign.summary}
+                </div>
+              </div>
+
+              {/* Clustering Basis */}
+              <div className="mb-6">
+                <div className="label mb-2">Cluster Correlation Basis</div>
+                <div className="flex flex-wrap gap-2">
+                  {selectedCampaign.clusterBasis.map((b, i) => (
+                    <span
+                      key={i}
+                      style={{
+                        fontSize: 11,
+                        padding: '4px 10px',
+                        borderRadius: 4,
+                        background: 'rgba(34,211,238,0.1)',
+                        border: '1px solid rgba(34,211,238,0.25)',
+                        color: '#22d3ee',
+                        fontWeight: 600,
+                      }}
+                    >
+                      ✓ {b}
+                    </span>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <div className="label mb-2">Associated Ingress IPs</div>
-                <div className="flex flex-col gap-1.5">
-                  {selectedCampaign.topIps.map(ip => (
-                    <div key={ip} className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-                      <span style={{ color: '#22d3ee' }}>{ip}</span>
-                      <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>RELAY</span>
-                    </div>
-                  ))}
+              {/* Correlated Domains & IPs */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <div className="label mb-2">Associated Lookalike Domains</div>
+                  <div className="flex flex-col gap-1.5">
+                    {selectedCampaign.topDomains.map(d => (
+                      <div key={d} className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+                        <span style={{ color: '#fca5a5' }}>{d}</span>
+                        <span style={{ fontSize: 9, color: '#ef4444', fontWeight: 700 }}>MALICIOUS</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="label mb-2">Associated Ingress IPs</div>
+                  <div className="flex flex-col gap-1.5">
+                    {selectedCampaign.topIps.map(ip => (
+                      <div key={ip} className="p-2 rounded flex items-center justify-between" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
+                        <span style={{ color: '#22d3ee' }}>{ip}</span>
+                        <span style={{ fontSize: 9, color: '#f59e0b', fontWeight: 700 }}>RELAY</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border)' }}>
+                <div>
+                  <div className="label">First Observed</div>
+                  <div style={{ fontSize: 12, color: 'var(--color-text)', marginTop: 2 }}>
+                    {new Date(selectedCampaign.firstObserved).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="label">Last Activity</div>
+                  <div style={{ fontSize: 12, color: '#ef4444', fontWeight: 700, marginTop: 2 }}>
+                    {new Date(selectedCampaign.lastObserved).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} (Active)
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Timeline */}
-            <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border)' }}>
-              <div>
-                <div className="label">First Observed</div>
-                <div style={{ fontSize: 12, color: 'var(--color-text)', marginTop: 2 }}>
-                  {new Date(selectedCampaign.firstObserved).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="label">Last Activity</div>
-                <div style={{ fontSize: 12, color: '#ef4444', fontWeight: 700, marginTop: 2 }}>
-                  {new Date(selectedCampaign.lastObserved).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} (Active)
-                </div>
-              </div>
-            </div>
+            {/* Campaign Chronological Activity Timeline */}
+            <CampaignTimeline />
           </div>
         )}
       </div>

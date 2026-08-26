@@ -1,24 +1,47 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { Globe, Shield, AlertTriangle, ExternalLink, X, Info } from 'lucide-react';
 
-interface LocationPoint {
+export interface LocationPoint {
   ip: string;
   country: string;
   city?: string;
   lat: number;
   lng: number;
   isp?: string;
+  asn?: string;
+  domain?: string;
+  campaign?: string;
+  threatScore?: number;
   isThreat?: boolean;
+}
+
+interface InteractiveGlobe3DProps {
+  locations?: LocationPoint[];
+  highlightIp?: string;
+  onSelectCountry?: (countryData: { country: string; points: LocationPoint[] }) => void;
 }
 
 export function InteractiveGlobe3D({
   locations = [],
   highlightIp,
-}: {
-  locations?: LocationPoint[];
-  highlightIp?: string;
-}) {
+  onSelectCountry,
+}: InteractiveGlobe3DProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [selectedCountry, setSelectedCountry] = useState<{
+    country: string;
+    points: LocationPoint[];
+  } | null>(null);
+
+  // Fallback realistic threat locations if none provided
+  const activeLocations: LocationPoint[] = locations.length > 0 ? locations : [
+    { ip: '185.220.101.5', country: 'Germany', city: 'Frankfurt', lat: 50.1109, lng: 8.6821, isp: 'Offshore VPS Cloud', asn: 'AS60729', domain: 'paypa1-security.com', campaign: 'ST-CAMP-0042', threatScore: 96, isThreat: true },
+    { ip: '194.26.29.112', country: 'Russia', city: 'Moscow', lat: 55.7558, lng: 37.6173, isp: 'Bulletproof Host Network', asn: 'AS44050', domain: 'microsoft-auth-verify.net', campaign: 'ST-CAMP-0017', threatScore: 92, isThreat: true },
+    { ip: '45.154.255.89', country: 'Netherlands', city: 'Amsterdam', lat: 52.3676, lng: 4.9041, isp: 'Cloud Transit Provider', asn: 'AS200019', domain: 'executive-urgent-desk.com', campaign: 'ST-CAMP-0031', threatScore: 88, isThreat: true },
+    { ip: '209.85.128.41', country: 'United States', city: 'Mountain View', lat: 37.3861, lng: -122.0839, isp: 'Google LLC Mail Relay', asn: 'AS15169', domain: 'google.com', threatScore: 15, isThreat: false },
+    { ip: '140.82.112.4', country: 'United States', city: 'San Francisco', lat: 37.7749, lng: -122.4194, isp: 'GitHub SMTP Relay', asn: 'AS36459', domain: 'github.com', threatScore: 10, isThreat: false },
+    { ip: '103.21.244.0', country: 'Singapore', city: 'Singapore', lat: 1.3521, lng: 103.8198, isp: 'Asia Cloud Gateway', asn: 'AS13335', domain: 'cdn-proxy-node.net', threatScore: 74, isThreat: true },
+  ];
 
   useEffect(() => {
     const container = mountRef.current;
@@ -26,6 +49,9 @@ export function InteractiveGlobe3D({
 
     const width = container.clientWidth || 600;
     const height = container.clientHeight || 450;
+
+    // Check reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // 1. Scene, Camera, Renderer
     const scene = new THREE.Scene();
@@ -37,6 +63,12 @@ export function InteractiveGlobe3D({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
+    // Track resources for clean disposal
+    const disposables: { geometries: THREE.BufferGeometry[]; materials: THREE.Material[] } = {
+      geometries: [],
+      materials: [],
+    };
+
     // 2. Globe Sphere & Wireframe
     const globeRadius = 70;
     const globeGroup = new THREE.Group();
@@ -44,6 +76,7 @@ export function InteractiveGlobe3D({
 
     // Base Sphere
     const sphereGeo = new THREE.SphereGeometry(globeRadius, 48, 48);
+    disposables.geometries.push(sphereGeo);
     const sphereMat = new THREE.MeshStandardMaterial({
       color: 0x050a18,
       emissive: 0x030712,
@@ -51,6 +84,7 @@ export function InteractiveGlobe3D({
       metalness: 0.2,
       wireframe: false,
     });
+    disposables.materials.push(sphereMat);
     const globeMesh = new THREE.Mesh(sphereGeo, sphereMat);
     globeGroup.add(globeMesh);
 
@@ -61,18 +95,21 @@ export function InteractiveGlobe3D({
       transparent: true,
       opacity: 0.18,
     });
+    disposables.materials.push(gridMat);
     const gridMesh = new THREE.Mesh(sphereGeo, gridMat);
     gridMesh.scale.setScalar(1.002);
     globeGroup.add(gridMesh);
 
     // Outer Atmospheric Glow
     const atmosGeo = new THREE.SphereGeometry(globeRadius * 1.15, 32, 32);
+    disposables.geometries.push(atmosGeo);
     const atmosMat = new THREE.MeshBasicMaterial({
       color: 0x06b6d4,
       transparent: true,
       opacity: 0.08,
       side: THREE.BackSide,
     });
+    disposables.materials.push(atmosMat);
     const atmosMesh = new THREE.Mesh(atmosGeo, atmosMat);
     scene.add(atmosMesh);
 
@@ -95,73 +132,67 @@ export function InteractiveGlobe3D({
       );
     };
 
-    // Default reference coordinates if no points passed
-    const activeLocations: LocationPoint[] = locations.length > 0
-      ? locations
-      : [
-          { ip: '185.220.101.5', country: 'Germany', city: 'Brandenburg', lat: 52.41, lng: 12.55, isThreat: true },
-          { ip: '209.85.128.41', country: 'United States', city: 'Mountain View', lat: 37.42, lng: -122.08, isThreat: false },
-          { ip: '103.21.244.0', country: 'India', city: 'Mumbai', lat: 19.07, lng: 72.87, isThreat: false },
-        ];
-
-    // Plot Location Pins & Pulse Rings
-    const pinGroup = new THREE.Group();
-    globeGroup.add(pinGroup);
-
+    // Plot Location Pins & Beacons
+    const markers: THREE.Mesh[] = [];
     activeLocations.forEach((loc) => {
       const pos = latLngToVector3(loc.lat, loc.lng, globeRadius);
-      const isHigh = loc.isThreat || loc.ip === highlightIp;
-      const pinColor = isHigh ? 0xef4444 : 0x22d3ee;
+      const isThreat = loc.isThreat !== false && (loc.threatScore ? loc.threatScore > 50 : true);
+      const markerColor = isThreat ? 0xef4444 : 0x22c55e;
 
-      // Glowing marker pin
-      const markerGeo = new THREE.SphereGeometry(2.5, 16, 16);
-      const markerMat = new THREE.MeshStandardMaterial({
-        color: pinColor,
-        emissive: pinColor,
-        emissiveIntensity: 0.9,
-      });
-      const marker = new THREE.Mesh(markerGeo, markerMat);
-      marker.position.copy(pos);
-      pinGroup.add(marker);
+      // Pin
+      const pinGeo = new THREE.SphereGeometry(2.2, 16, 16);
+      disposables.geometries.push(pinGeo);
+      const pinMat = new THREE.MeshBasicMaterial({ color: markerColor });
+      disposables.materials.push(pinMat);
+      const pinMesh = new THREE.Mesh(pinGeo, pinMat);
+      pinMesh.position.copy(pos);
+      pinMesh.userData = loc;
+      markers.push(pinMesh);
+      globeGroup.add(pinMesh);
 
       // Pulse Ring
-      const ringGeo = new THREE.RingGeometry(2.8, 4.2, 24);
+      const ringGeo = new THREE.RingGeometry(2.4, 4.2, 24);
+      disposables.geometries.push(ringGeo);
       const ringMat = new THREE.MeshBasicMaterial({
-        color: pinColor,
+        color: markerColor,
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.6,
       });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.position.copy(pos);
-      ring.lookAt(new THREE.Vector3(0, 0, 0));
-      pinGroup.add(ring);
+      disposables.materials.push(ringMat);
+      const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+      ringMesh.position.copy(pos);
+      ringMesh.lookAt(0, 0, 0);
+      globeGroup.add(ringMesh);
     });
 
-    // Draw Great-Circle Arcs Between Points
-    if (activeLocations.length >= 2) {
-      for (let i = 0; i < activeLocations.length - 1; i++) {
-        const v1 = latLngToVector3(activeLocations[i].lat, activeLocations[i].lng, globeRadius);
-        const v2 = latLngToVector3(activeLocations[i + 1].lat, activeLocations[i + 1].lng, globeRadius);
+    // Raycasting & Interaction
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
 
-        // Compute midpoint arched outward
-        const mid = v1.clone().add(v2).multiplyScalar(0.5);
-        mid.normalize().multiplyScalar(globeRadius * 1.35);
+    const handleClick = (e: MouseEvent) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
-        const curve = new THREE.QuadraticBezierCurve3(v1, mid, v2);
-        const points = curve.getPoints(50);
-        const arcGeo = new THREE.BufferGeometry().setFromPoints(points);
-        const arcMat = new THREE.LineBasicMaterial({
-          color: 0x38bdf8,
-          transparent: true,
-          opacity: 0.6,
-        });
-        const arcLine = new THREE.Line(arcGeo, arcMat);
-        globeGroup.add(arcLine);
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(markers);
+
+      if (intersects.length > 0) {
+        const clickedData = intersects[0].object.userData as LocationPoint;
+        const matchingPoints = activeLocations.filter(p => p.country === clickedData.country);
+        const countryPayload = {
+          country: clickedData.country,
+          points: matchingPoints,
+        };
+        setSelectedCountry(countryPayload);
+        if (onSelectCountry) onSelectCountry(countryPayload);
       }
-    }
+    };
 
-    // Interactive Drag to Rotate
+    renderer.domElement.addEventListener('click', handleClick);
+
+    // Mouse Drag Rotation
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
 
@@ -175,8 +206,8 @@ export function InteractiveGlobe3D({
       const deltaX = e.clientX - previousMousePosition.x;
       const deltaY = e.clientY - previousMousePosition.y;
 
-      globeGroup.rotation.y += deltaX * 0.005;
-      globeGroup.rotation.x += deltaY * 0.005;
+      globeGroup.rotation.y += deltaX * 0.006;
+      globeGroup.rotation.x += deltaY * 0.006;
 
       previousMousePosition = { x: e.clientX, y: e.clientY };
     };
@@ -185,49 +216,122 @@ export function InteractiveGlobe3D({
       isDragging = false;
     };
 
-    container.addEventListener('mousedown', onMouseDown);
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
 
-    // Animation loop
+    // Animation Loop
     let animId: number;
     const animate = () => {
-      animId = requestAnimationFrame(animate);
-      if (!isDragging) {
+      if (!prefersReducedMotion && !isDragging && !document.hidden) {
         globeGroup.rotation.y += 0.0025;
       }
       renderer.render(scene, camera);
+      animId = requestAnimationFrame(animate);
     };
+
     animate();
+
+    const handleResize = () => {
+      if (!container) return;
+      const w = container.clientWidth;
+      const h = container.clientHeight || 450;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
+    window.addEventListener('resize', handleResize);
 
     return () => {
       cancelAnimationFrame(animId);
-      container.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('resize', handleResize);
+      renderer.domElement.removeEventListener('click', handleClick);
+      renderer.domElement.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
-      if (renderer.domElement && container.contains(renderer.domElement)) {
+
+      if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
+
+      // Dispose Three.js resources
+      disposables.geometries.forEach(g => g.dispose());
+      disposables.materials.forEach(m => m.dispose());
       renderer.dispose();
     };
-  }, [locations, highlightIp]);
+  }, [activeLocations, highlightIp, onSelectCountry]);
 
   return (
-    <div className="relative w-full h-full min-h-[380px] rounded-xl overflow-hidden bg-gradient-to-b from-[#050a18]/60 to-[#020617]/90 border border-cyan-500/10">
+    <div className="relative w-full h-[500px] rounded-2xl bg-[#020617] border border-cyan-500/20 overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)]">
+      {/* 3D WebGL Canvas Container */}
       <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
-      
-      {/* Honest Infrastructure Attribution Badge */}
-      <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-lg bg-[#080e21]/85 border border-cyan-500/20 backdrop-blur-md">
+
+      {/* Mandatory Top Overlay Disclaimer */}
+      <div className="absolute top-4 left-4 right-4 z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-[#080e21]/90 border border-cyan-500/20 backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-cyan-400" />
-          <span className="text-[11px] font-mono text-cyan-300">
-            Observed MTA Infrastructure Location
+          <Globe size={16} className="text-cyan-400" />
+          <span className="font-mono text-xs font-bold text-slate-100 uppercase tracking-wider">
+            OBSERVED NETWORK INFRASTRUCTURE (GEOLOCATION MAP)
           </span>
         </div>
-        <div className="text-[9px] text-slate-400 mt-0.5 max-w-[280px]">
-          Represents ISP datacenter routing. Does not establish physical human attribution.
+        <div className="text-[10px] font-mono text-slate-400">
+          Click country markers to inspect observed relay clusters
         </div>
       </div>
+
+      {/* Mandatory Bottom Legal Disclaimer */}
+      <div className="absolute bottom-4 left-4 right-4 z-20 p-2.5 rounded-lg bg-[#050a18]/90 border border-amber-500/20 backdrop-blur-md text-[10px] font-mono text-amber-300 flex items-center gap-2">
+        <AlertTriangle size={13} className="text-amber-400 flex-shrink-0" />
+        <span>
+          <strong>LEGAL FORENSIC NOTICE:</strong> Geolocation represents observed network infrastructure / relay hops and does NOT establish the attacker's physical location.
+        </span>
+      </div>
+
+      {/* Selected Country Inspection Drawer */}
+      {selectedCountry && (
+        <div className="absolute top-16 right-4 bottom-16 z-30 w-80 p-4 rounded-xl bg-[#080e21]/95 border border-cyan-500/30 backdrop-blur-xl shadow-2xl overflow-y-auto space-y-3 animate-fade-in">
+          <div className="flex items-center justify-between border-b border-cyan-500/20 pb-2">
+            <div>
+              <div className="text-[10px] font-mono font-bold text-cyan-400 uppercase">
+                OBSERVED INFRASTRUCTURE REGION
+              </div>
+              <div className="text-base font-bold text-white mt-0.5">
+                {selectedCountry.country}
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedCountry(null)}
+              className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800"
+            >
+              <X size={15} />
+            </button>
+          </div>
+
+          <div className="text-[11px] font-mono text-slate-300">
+            {selectedCountry.points.length} observed relay endpoints in this region:
+          </div>
+
+          <div className="space-y-2">
+            {selectedCountry.points.map((pt, i) => (
+              <div key={i} className="p-2.5 rounded bg-[#050a18] border border-slate-800 text-xs font-mono space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-cyan-300 font-bold">{pt.ip}</span>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${pt.isThreat ? 'bg-red-950 text-red-300 border border-red-500/30' : 'text-emerald-400'}`}>
+                    {pt.threatScore ? `Score ${pt.threatScore}` : 'OBSERVED'}
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-400">{pt.isp || 'Hosting Provider'} ({pt.asn || 'ASN'})</div>
+                {pt.domain && (
+                  <div className="text-[10px] text-amber-300">Domain: {pt.domain}</div>
+                )}
+                {pt.campaign && (
+                  <div className="text-[10px] text-purple-300">Campaign: #{pt.campaign}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useAnalysis } from '@/context/AnalysisContext';
 import { DEMO_EMAIL_RAW, DEMO_EMAIL_FILENAME } from '@/demo/demoEmail';
 import { analyseEmail } from '@/services/analysisService';
 import { useSession } from '@/context/SessionContext';
+import { InteractiveGlobe3D } from '@/components/3d/InteractiveGlobe3D';
 import type { Severity, DomainIntelligence, IpIntelligence } from '@/types';
 
 export function ThreatIntelligence() {
@@ -82,8 +83,21 @@ export function ThreatIntelligence() {
     }
   };
 
+  // Build Globe Location Points from analyzed IPs
+  const globePoints = ipIntel.map(ip => ({
+    ip: ip.ip,
+    country: ip.geo?.country || 'Unknown',
+    city: ip.geo?.city || undefined,
+    lat: ip.geo?.latitude || 50.1109,
+    lng: ip.geo?.longitude || 8.6821,
+    isp: ip.isp || undefined,
+    asn: ip.asn || undefined,
+    isThreat: ip.risk === 'CRITICAL' || ip.risk === 'HIGH',
+    threatScore: ip.risk === 'CRITICAL' ? 95 : ip.risk === 'HIGH' ? 80 : 30,
+  }));
+
   return (
-    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }} className="space-y-6">
       {/* Top Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
@@ -97,55 +111,22 @@ export function ThreatIntelligence() {
             Infrastructure attribution, lookalike typosquatting scores, WHOIS age, MX telemetry, and blacklist correlation
           </div>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/graph')} className="btn-primary flex items-center gap-2 text-xs">
-            <Layers size={14} />
-            <span>Interactive Network Graph</span>
-          </button>
-        </div>
       </div>
 
-      {/* Lookalike Typosquatting Alert Banner if detected */}
-      {domainIntel.some(d => d.similarity) && (
-        <div
-          className="panel-elevated mb-6"
-          style={{
-            padding: 16,
-            background: 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(10,15,26,0.95) 70%)',
-            borderLeft: '4px solid #ef4444',
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <div
-              style={{
-                width: 36, height: 36, borderRadius: 8,
-                background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              }}
-            >
-              <AlertTriangle size={18} color="#ef4444" />
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#fca5a5' }}>
-                CRITICAL: BRAND SPOOFING / LOOKALIKE DOMAIN DETECTED
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-dim)', marginTop: 2 }}>
-                The analyzed message communicates via <strong style={{ color: '#ef4444', fontFamily: 'var(--font-mono)' }}>{domainIntel.find(d => d.similarity)?.domain}</strong>, exhibiting <strong>{domainIntel.find(d => d.similarity)?.similarity?.score}% similarity</strong> to legitimate brand <strong style={{ color: '#22d3ee' }}>{domainIntel.find(d => d.similarity)?.similarity?.comparedTo}</strong> using <em>{domainIntel.find(d => d.similarity)?.similarity?.technique}</em>.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Global 3D Observed Infrastructure Globe */}
+      <div>
+        <div className="section-title mb-2">Global 3D Infrastructure Map</div>
+        <InteractiveGlobe3D locations={globePoints} highlightIp={activeIp?.ip} />
+      </div>
 
       {/* Section 1: Domain Intelligence */}
-      <div className="mb-8">
-        <div className="section-title">Domain Intelligence & DNS Records</div>
+      <div className="mb-6">
+        <div className="section-title">Domain Intelligence & Typosquatting Analysis</div>
 
         <div className="grid gap-6" style={{ gridTemplateColumns: 'minmax(280px, 1fr) minmax(360px, 2fr)' }}>
           {/* Domain List */}
           <div className="panel" style={{ padding: 16 }}>
-            <div className="label mb-3">Identified Sender & Link Domains ({domainIntel.length})</div>
+            <div className="label mb-3">Extracted Domains ({domainIntel.length})</div>
             <div className="flex flex-col gap-2">
               {domainIntel.map(d => {
                 const isSelected = activeDomain?.domain === d.domain;
@@ -166,7 +147,7 @@ export function ThreatIntelligence() {
                         {d.domain}
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--color-text-muted)', marginTop: 2 }}>
-                        {d.ageDays !== null ? `Age: ${d.ageDays} days` : 'Registration age unknown'}
+                        {d.similarity ? `Mimics ${d.similarity.comparedTo} (${d.similarity.score}%)` : d.registrar || 'Standard registration'}
                       </div>
                     </div>
                     <span
@@ -194,7 +175,7 @@ export function ThreatIntelligence() {
                     {activeDomain.domain}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--color-text-dim)', marginTop: 2 }}>
-                    Registrar: <strong>{activeDomain.registrar || 'Private / Redacted'}</strong>
+                    Registrar: <strong>{activeDomain.registrar || 'Privacy Protected / Redacted'}</strong>
                   </div>
                 </div>
 

@@ -5,9 +5,8 @@ import { fileURLToPath, URL } from 'node:url';
 /**
  * SENTINELTRACE frontend build configuration.
  *
- * The dev server proxies `/api` to the existing FastAPI backend on :8000 so the
- * browser never makes a cross-origin request during development. In production
- * builds the base URL is read from `VITE_API_BASE_URL` instead.
+ * Optimized chunk splitting for React, Three.js, Recharts, and D3 dependencies
+ * to ensure fast initial page load and on-demand forensic module execution.
  */
 export default defineConfig({
   plugins: [react()],
@@ -31,12 +30,27 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    chunkSizeWarningLimit: 1500,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          react: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['recharts'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('three')) {
+              return 'three';
+            }
+            if (id.includes('recharts')) {
+              return 'charts';
+            }
+            if (id.includes('d3')) {
+              return 'd3';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'react';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+          }
         },
       },
     },
