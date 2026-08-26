@@ -105,7 +105,7 @@ export function Landing() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-            Drop an email. SentinelTrace investigates it. Reconstruct multi-hop MTA relay chains, verify RFC 7208/6376/7489 cryptographic authentications, and correlate threat actor infrastructure in real time.
+            Drop an email. SentinelTrace investigates it. Reconstruct multi-hop MTA relay chains, evaluate SPF/DMARC policy, verify DKIM when raw evidence and DNS permit, and correlate observed infrastructure.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">

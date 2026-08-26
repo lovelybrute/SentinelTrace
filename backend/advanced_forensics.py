@@ -13,7 +13,7 @@ from bec_detector import BECDetector
 class AdvancedForensics:
     """
     Forensic Orchestration Suite.
-    Integrates real SPF evaluation, DKIM cryptographic inspection, DMARC alignment analysis,
+    Integrates SPF evaluation, explicit DKIM verification status, DMARC alignment analysis,
     Received-chain timeline reconstruction, origin assessment, lookalike detection, and BEC analysis.
     """
 
@@ -41,7 +41,8 @@ class AdvancedForensics:
     def analyze_authentication(
         self,
         email_data: Dict[str, Any],
-        sending_ip: Optional[str] = None
+        sending_ip: Optional[str] = None,
+        raw_message_bytes: Optional[bytes] = None,
     ) -> Dict[str, Any]:
         """
         Comprehensive RFC-compliant authentication analysis (SPF + DKIM + DMARC + Alignment).
@@ -52,7 +53,11 @@ class AdvancedForensics:
         dkim_sig = evidence.get("dkim_signature", "")
 
         # 1. DKIM Verification
-        dkim_res = self.dkim_verifier.verify(dkim_sig, sender_domain)
+        dkim_res = self.dkim_verifier.verify(
+            dkim_sig,
+            sender_domain,
+            raw_message_bytes=raw_message_bytes,
+        )
 
         # 2. SPF Evaluation (Against observed sending IP or earliest hop)
         spf_res = self.spf_evaluator.evaluate(sender_domain or "", sending_ip)
@@ -60,7 +65,7 @@ class AdvancedForensics:
         # 3. DMARC Evaluation & Identifier Alignment
         dmarc_res = self.dmarc_analyzer.evaluate(sender_domain or "", spf_res, dkim_res)
 
-        # Compute Trust Score based on genuine cryptographic and policy verification
+        # Compute trust only from the verification status actually returned.
         trust_score = 30  # Baseline unauthenticated message
         if dkim_res.get("status") == "PASS":
             trust_score += 30

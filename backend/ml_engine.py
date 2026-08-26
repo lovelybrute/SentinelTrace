@@ -3,7 +3,6 @@ from typing import Dict, Any, List, Tuple, Optional
 
 try:
     from sklearn.ensemble import GradientBoostingClassifier
-    from sklearn.feature_extraction.text import TfidfVectorizer
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
@@ -12,8 +11,8 @@ except ImportError:
 class MLThreatEngine:
     """
     AI/ML Email Threat Detection and Classification Engine.
-    Combines NLP token representation with structured forensic signal engineering.
-    Outputs calibrated probability distributions across 7 threat classes with explainability.
+    Prototype classifier over structured forensic signal engineering.
+    Outputs probability distributions across 7 threat classes with explainability.
     Discloses evaluation status transparently.
     """
 
@@ -26,6 +25,9 @@ class MLThreatEngine:
         "MALWARE_DELIVERY",
         "FRAUD"
     ]
+    TRAINING_SOURCE = "synthetic attack-archetype baseline"
+    TRAINING_SAMPLE_COUNT = 17
+    EXTERNAL_VALIDATION_STATUS = "NOT_VALIDATED_ON_PUBLIC_CORPUS"
 
     def __init__(self):
         self.is_ready = SKLEARN_AVAILABLE
@@ -176,9 +178,15 @@ class MLThreatEngine:
                 "confidence_score": round(top_prob * 100, 1),
                 "probabilities": prob_distribution,
                 "contributing_features": contributions,
-                "model_architecture": "Gradient Boosting Decision Trees + NLP Feature Union",
-                "evaluation_status": "Benchmark Pipeline Active (Trained on verified attack archetypes)",
-                "limitations": "Model outputs represent statistical risk inference based on static message telemetry."
+                "model_architecture": "Gradient Boosting Decision Trees over 10 forensic features",
+                "evaluation_status": "Prototype baseline active; external dataset validation pending",
+                "training_source": self.TRAINING_SOURCE,
+                "training_sample_count": self.TRAINING_SAMPLE_COUNT,
+                "external_validation_status": self.EXTERNAL_VALIDATION_STATUS,
+                "limitations": (
+                    "Prototype inference trained on a small synthetic baseline. Scores are risk indicators, "
+                    "not independently validated accuracy claims."
+                )
             }
 
         except Exception as e:
@@ -221,5 +229,8 @@ class MLThreatEngine:
             "contributing_features": [{"signal": "Rule engine fallback evaluation", "weight": +20, "category": "CONTEXTUAL"}],
             "model_architecture": "Forensic Rule Heuristics Engine",
             "evaluation_status": f"Fallback Mode ({error or 'scikit-learn pipeline'})",
-            "limitations": "Inference derived from heuristic rules."
+            "training_source": "not applicable",
+            "training_sample_count": 0,
+            "external_validation_status": "NOT_APPLICABLE_RULE_ENGINE",
+            "limitations": "Inference derived from heuristic rules; no ML accuracy claim is made."
         }

@@ -44,15 +44,16 @@
 - `npm run typecheck`: pass.
 - `npm run build`: pass.
 - No frontend lint script is currently configured.
-- Backend API health, stats, and case-lifecycle tests pass (3/3).
-- Backend offline unit tests pass 14/15; the existing private-IP SPF test expects `NEUTRAL` but currently receives `NONE`. This was not introduced by the frontend work.
-- pytest and its compatible httpx test dependency are not listed in requirements.txt.
+- Backend offline unit tests covering SPF, DKIM/DMARC, relay parsing, BEC, attachments, URLs, and ML disclosure pass 18/18.
+- Backend API health, stats, and case-lifecycle tests pass 3/3.
+- Test dependencies are declared in `requirements-dev.txt`.
 - Vite reports a non-blocking circular/manual chunk warning and a large Three.js vendor chunk.
 
 ## 10. Known bugs and remaining tasks
 - Complete Phase 5 and Phase 6.
 - Consider refining Vite vendor chunking to reduce the Three.js chunk size.
-- Add a frontend lint script and development test dependencies.
+- Add a frontend lint script.
+- Validate the prototype ML engine on a public labeled email corpus before making accuracy claims.
 
 ## 11. The exact next implementation step
 - Begin Phase 5: Holographic Forensic Lab email analyzer, preserving the existing backend response contracts.

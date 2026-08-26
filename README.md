@@ -8,7 +8,7 @@
 
 ## 🌐 Live Platform Overview
 
-SentinelTrace is an enterprise-grade cyber digital forensics and threat intelligence platform built for SOC analysts, incident response teams, and forensic investigators.
+SentinelTrace is an SIH prototype cyber digital-forensics and threat-intelligence platform built for SOC analysts, incident-response teams, and forensic investigators.
 
 Combining **RFC-compliant protocol verification**, **cryptographic chain-of-custody tracking**, **machine learning classification**, **3D infrastructure visualizations**, and an **AI investigation copilot**, SentinelTrace provides full lifecycle email threat analysis from raw RFC 5322 MIME ingestion to OASIS STIX 2.1 threat intelligence export.
 
@@ -18,13 +18,13 @@ Combining **RFC-compliant protocol verification**, **cryptographic chain-of-cust
 
 | Forensic Domain | Implementation Details |
 |---|---|
-| **RFC Authentication** | Pure RFC 7208 (SPF), RFC 6376 (DKIM with DNS selector keys), and RFC 7489 (DMARC strict/relaxed alignment). **Zero fake PASS badges**. |
+| **RFC Authentication** | RFC 7208 SPF evaluation, DKIM DNS-key inspection with cryptographic verification through `dkimpy` when raw bytes and DNS are available, and RFC 7489 DMARC alignment. Unverified signatures never receive a PASS badge. |
 | **Relay Timeline** | Top-down SMTP Received: header parsing into reverse chronological order, filtering RFC 1918 internal subnets to find the earliest public external gateway. |
 | **Origin Intelligence** | Classifies infrastructure (Corporate, Cloud, VPS, VPN, Open Relay) with **3D Interactive Cyber Globe** and honest ISP datacenter attribution. |
 | **Brand Protection** | Damerau-Levenshtein distance, character substitutions (`0` for `o`, `rn` for `m`), and IDN homoglyph punycode detection. |
 | **BEC Detection** | 7-category classifier (Executive Impersonation, Invoice Fraud, Payment Diversion, Payroll, Wire Transfers, Gift Cards, Credential Harvesting). |
 | **Safe Static Analysis** | Magic-byte MIME checks, executable double-extension detection (`.pdf.exe`), SSRF-protected URL analysis, and SHA-256/SHA-512 evidence hashing. |
-| **Explainable ML** | Gradient Boosting classifier with transparent factor weights (+12 SPF mismatch, +15 Reply-To divergence, +18 lookalike domain). |
+| **Explainable risk engine** | Transparent rule weights plus a clearly labeled Gradient Boosting prototype trained on a small synthetic attack-archetype baseline. No external accuracy claim is made yet. |
 | **Threat Sharing** | Automated MITRE ATT&CK matrix mapping (T1566, T1598) and standardized OASIS STIX 2.1 JSON bundle exporter. |
 | **Investigation UX** | 3D Hero Network, 3D Entity Graph, AI Investigation Copilot Drawer, and Universal Command Palette (`Ctrl + K`). |
 
@@ -111,7 +111,8 @@ npm run dev
 
 ### Run Complete Automated Test Suite
 ```bash
-# Run 19/19 pytest backend unit tests
+# Install test-only dependencies and run the backend suite
+pip install -r requirements-dev.txt
 python -m pytest backend/tests/ -v
 
 # Run End-to-End API smoke test

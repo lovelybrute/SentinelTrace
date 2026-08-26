@@ -23,7 +23,7 @@ export function AICopilotDrawer({
     {
       id: 'init-1',
       sender: 'AI',
-      text: 'SentinelTrace AI Forensic Copilot initialized. I am strictly grounded in verified RFC headers, cryptographic signatures, DNS records, and relay telemetry. Ask me any question regarding active evidence.',
+      text: 'SentinelTrace AI Forensic Copilot initialized. I am grounded in the currently loaded RFC headers, reported verification status, DNS results, and relay telemetry. Ask me about the active evidence.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);

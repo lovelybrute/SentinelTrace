@@ -29,8 +29,13 @@ def test_spf_evaluator_softfail():
     assert mech == "~all"
 
 
-def test_spf_evaluator_private_ip():
+def test_spf_evaluator_private_ip(monkeypatch):
     evaluator = SPFEvaluator()
+    monkeypatch.setattr(
+        evaluator,
+        "query_spf_record",
+        lambda _domain: (_ for _ in ()).throw(AssertionError("private IP must not trigger DNS")),
+    )
     result = evaluator.evaluate("example.com", "192.168.1.100")
     assert result["result"] == "NEUTRAL"
     assert "private/internal" in result["reasoning"]

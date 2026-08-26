@@ -17,6 +17,12 @@ try:
 except ImportError:
     CRYPTO_AVAILABLE = False
 
+try:
+    import dkim
+    DKIMPY_AVAILABLE = True
+except ImportError:
+    DKIMPY_AVAILABLE = False
+
 
 class DKIMVerifier:
     """
@@ -186,18 +192,42 @@ class DKIMVerifier:
             result["evidence"].append(result["reasoning"])
             return result
 
-        # If we have the public key and basic signature syntax
-        if sig_b and body_hash:
-            # We have valid signature metadata and public key
-            # In a live forensic tool without raw canonicalized streaming, we report signature validity status
-            result["status"] = "PASS" if result["domain_alignment"] in ("STRICT_ALIGNED", "RELAXED_ALIGNED") else "NEUTRAL"
-            result["cryptographic_verification"] = "SYNTAX_VALID_KEY_PRESENT"
-            result["reasoning"] = f"Valid DKIM signature header present and public key verified in DNS ({selector}._domainkey.{signing_domain})."
-            result["evidence"].append("DKIM key published in DNS and signature parameters well-formed.")
-        else:
+        if not sig_b or not body_hash:
             result["status"] = "PERMERROR"
             result["cryptographic_verification"] = "MALFORMED_SIGNATURE"
             result["reasoning"] = "DKIM signature value (b=) or body hash (bh=) is missing."
+            result["evidence"].append(result["reasoning"])
+            return result
+
+        # DNS key presence and syntactically valid tags are necessary but are
+        # never sufficient for PASS. Only a canonicalized signature/body-hash
+        # verification may produce a cryptographic PASS.
+        if raw_message_bytes and DKIMPY_AVAILABLE:
+            try:
+                verified = bool(dkim.verify(raw_message_bytes, timeout=self.timeout))
+            except Exception as exc:
+                result["status"] = "TEMPERROR"
+                result["cryptographic_verification"] = "VERIFICATION_ERROR"
+                result["reasoning"] = f"DKIM cryptographic verification could not complete: {exc}"
+                result["evidence"].append(result["reasoning"])
+                return result
+
+            result["status"] = "PASS" if verified else "FAIL"
+            result["cryptographic_verification"] = "VERIFIED" if verified else "SIGNATURE_INVALID"
+            result["reasoning"] = (
+                "DKIM signature, canonicalized headers, and body hash verified cryptographically."
+                if verified
+                else "DKIM signature or canonicalized body hash failed cryptographic verification."
+            )
+            result["evidence"].append(result["reasoning"])
+        else:
+            result["status"] = "NEUTRAL"
+            result["cryptographic_verification"] = "UNVERIFIED_KEY_PRESENT"
+            missing = "raw RFC 5322 bytes" if not raw_message_bytes else "dkimpy dependency"
+            result["reasoning"] = (
+                f"DKIM syntax and DNS key are present, but {missing} is unavailable; "
+                "cryptographic PASS was not asserted."
+            )
             result["evidence"].append(result["reasoning"])
 
         return result

@@ -96,6 +96,27 @@ class SPFEvaluator:
             result["reasoning"] = "Sender domain is missing or invalid"
             return result
 
+        # Validate the transmitting IP before any DNS work. Private, loopback,
+        # and reserved addresses cannot be authorized by a public SPF policy.
+        ip_obj: Optional[ipaddress._BaseAddress] = None
+        if sending_ip:
+            try:
+                ip_obj = ipaddress.ip_address(sending_ip.strip())
+            except ValueError:
+                result["result"] = "PERMERROR"
+                result["reasoning"] = f"Invalid sending IP address format: '{sending_ip}'"
+                result["evidence"].append(result["reasoning"])
+                return result
+
+            if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved:
+                result["result"] = "NEUTRAL"
+                result["reasoning"] = (
+                    f"Sending IP {sending_ip} is a private/internal address; "
+                    "public SPF evaluation is not applicable."
+                )
+                result["evidence"].append(result["reasoning"])
+                return result
+
         spf_record, error_msg = self.query_spf_record(sender_domain)
 
         if error_msg and "Multiple SPF" in error_msg:
@@ -126,23 +147,8 @@ class SPFEvaluator:
             result["evidence"].append(result["reasoning"])
             return result
 
-        # Validate IP format
-        try:
-            ip_obj = ipaddress.ip_address(sending_ip.strip())
-        except ValueError:
-            result["result"] = "PERMERROR"
-            result["reasoning"] = f"Invalid sending IP address format: '{sending_ip}'"
-            result["evidence"].append(result["reasoning"])
-            return result
-
-        # If sending IP is private or loopback, SPF evaluation against public domain is unroutable
-        if ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_reserved:
-            result["result"] = "NEUTRAL"
-            result["reasoning"] = f"Sending IP {sending_ip} is a private/internal address; SPF evaluation is not applicable."
-            result["evidence"].append(result["reasoning"])
-            return result
-
         # Evaluate terms in SPF record
+        assert ip_obj is not None
         lookup_counter = [0]
         eval_result, matched_mech, reason = self._evaluate_record(spf_record, sender_domain, ip_obj, lookup_counter)
         result["result"] = eval_result

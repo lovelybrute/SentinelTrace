@@ -264,7 +264,11 @@ class EmailForensicParser:
                 "dkim_signature": dkim_sig
             }
         }
-        auth_analysis = self.forensics.analyze_authentication(prelim_data, sending_ip=sending_ip)
+        auth_analysis = self.forensics.analyze_authentication(
+            prelim_data,
+            sending_ip=sending_ip,
+            raw_message_bytes=raw_bytes,
+        )
 
         # 5. Origin Assessment
         primary_geo = sender_locations[0] if sender_locations else None
