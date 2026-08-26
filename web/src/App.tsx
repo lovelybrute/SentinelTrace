@@ -47,9 +47,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   const { session } = useSession();
   const [showIntro, setShowIntro] = useState(() => {
-    // Check if intro is enabled and hasn't been seen in this session
+    // Play once per browser session (sessionStorage), not once ever
     const introDisabled = localStorage.getItem('sentineltrace_intro_enabled') === 'false';
-    const introSeen = localStorage.getItem('sentineltrace_intro_seen') === 'true';
+    const introSeen = sessionStorage.getItem('sentineltrace_intro_seen') === 'true';
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return !introDisabled && !introSeen && !prefersReducedMotion;
   });

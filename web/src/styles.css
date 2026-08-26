@@ -14,12 +14,12 @@
 /* ------------------------------------------------------------------ */
 
 :root {
-  --color-bg:          #020617;
+  --color-bg:          #02070D;
   --color-bg-alt:      #050a18;
-  --color-surface:     #080e21;
-  --color-surface-2:   #0d1733;
-  --color-surface-3:   #121f45;
-  --color-surface-glass: rgba(8, 14, 33, 0.75);
+  --color-surface:     #06111C;
+  --color-surface-2:   #0A1726;
+  --color-surface-3:   #0F1E33;
+  --color-surface-glass: rgba(6, 17, 28, 0.75);
 
   --color-border:      rgba(34, 211, 238, 0.12);
   --color-border-hover:rgba(34, 211, 238, 0.35);

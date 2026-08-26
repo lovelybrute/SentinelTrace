@@ -5,17 +5,17 @@ export default {
     extend: {
       colors: {
         /* ---- Structural surfaces: deep navy, near-black ---- */
-        base: '#05070C',
+        base: '#02070D', // Updated to exact request
         surface: {
-          DEFAULT: '#0A0F1A',
-          raised: '#0E1524',
-          overlay: '#131B2D',
-          inset: '#070B13',
+          DEFAULT: '#06111C', // Updated panel color
+          raised: '#0A1726',
+          overlay: '#0F1E33',
+          inset: '#010408',
         },
         edge: {
-          DEFAULT: '#1A2334',
-          strong: '#27324B',
-          bright: '#36456A',
+          DEFAULT: '#162842',
+          strong: '#223C60',
+          bright: '#335682',
         },
         /* ---- Text ---- */
         ink: {
@@ -24,12 +24,17 @@ export default {
           faint: '#66718A',
           ghost: '#434D62',
         },
-        /* ---- Intelligence (cyan/blue) ---- */
+        /* ---- Intelligence (cyan/blue/violet) ---- */
         intel: {
-          DEFAULT: '#22D3EE',
+          DEFAULT: '#00D9FF', // Primary cyan
           soft: '#67E8F9',
           deep: '#0E7490',
           ink: '#083344',
+        },
+        forensic: {
+          DEFAULT: '#8B5CF6', // Forensic violet
+          soft: '#C4B5FD',
+          deep: '#5B21B6',
         },
         azure: {
           DEFAULT: '#3B82F6',
@@ -38,19 +43,19 @@ export default {
         },
         /* ---- Severity scale ---- */
         critical: {
-          DEFAULT: '#FF3B52',
+          DEFAULT: '#FF334F', // Critical crimson
           soft: '#FF8496',
           deep: '#8E0C1E',
         },
         high: {
-          DEFAULT: '#FF7A3D',
-          soft: '#FFB088',
-          deep: '#8A3410',
+          DEFAULT: '#F59E0B', // Warning amber (used as high here)
+          soft: '#FCD34D',
+          deep: '#B45309',
         },
         medium: {
-          DEFAULT: '#F5B133',
-          soft: '#FBD07A',
-          deep: '#875A08',
+          DEFAULT: '#FBBF24',
+          soft: '#FDE68A',
+          deep: '#D97706',
         },
         low: {
           DEFAULT: '#38BDF8',
@@ -58,9 +63,9 @@ export default {
           deep: '#075985',
         },
         safe: {
-          DEFAULT: '#2DD4A7',
-          soft: '#86EFCB',
-          deep: '#0B6B52',
+          DEFAULT: '#22C55E', // Safe green
+          soft: '#86EFAC',
+          deep: '#14532D',
         },
       },
       fontFamily: {
