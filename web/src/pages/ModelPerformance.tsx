@@ -7,7 +7,18 @@ export function ModelPerformance() {
   const [error, setError] = useState('');
   useEffect(() => {
     const controller = new AbortController();
-    fetchModelMetrics(controller.signal).then(setData).catch(e => setError(e instanceof Error ? e.message : 'Metrics unavailable'));
+    fetchModelMetrics(controller.signal)
+      .then(result => {
+        if (!controller.signal.aborted) {
+          setData(result);
+          setError('');
+        }
+      })
+      .catch(e => {
+        if (!controller.signal.aborted) {
+          setError(e instanceof Error ? e.message : 'Metrics unavailable');
+        }
+      });
     return () => controller.abort();
   }, []);
   const selected = data?.selected_model ? data.models?.[data.selected_model] : undefined;
