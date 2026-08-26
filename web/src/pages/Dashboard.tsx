@@ -48,7 +48,7 @@ interface MetricCardProps {
 function MetricCard({ icon, label, value, delta, color, accent }: MetricCardProps) {
   return (
     <div
-      className="panel animate-fade-in"
+      className="panel metric-glass-card animate-fade-in"
       style={{
         padding: '20px',
         borderLeft: `3px solid ${color}`,
@@ -129,10 +129,8 @@ function ThreatBadge({ level }: { level: Severity }) {
 function FeaturedThreatCard({ onInvestigate }: { onInvestigate: () => void }) {
   return (
     <div
-      className="animate-fade-in"
+      className="threat-glass-card animate-fade-in"
       style={{
-        background: 'linear-gradient(135deg, rgba(127,29,29,0.3) 0%, rgba(10,15,26,0.95) 60%)',
-        border: '1px solid rgba(239,68,68,0.3)',
         borderRadius: 12,
         padding: '20px 24px',
         position: 'relative',
@@ -338,11 +336,15 @@ export function Dashboard() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+    <div className="dashboard-page" style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+      <div className="dashboard-orb dashboard-orb-cyan" aria-hidden="true" />
+      <div className="dashboard-orb dashboard-orb-violet" aria-hidden="true" />
+
       {/* Page header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="dashboard-command-header flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '0.02em' }}>
+          <div className="dashboard-eyebrow">TEAM BRUTE · SIH 26106</div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--color-text)', letterSpacing: '0.02em' }}>
             Command Center
           </h1>
           <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
@@ -354,11 +356,9 @@ export function Dashboard() {
         <button
           onClick={handleLiveDemo}
           disabled={demoRunning}
-          className="flex items-center gap-2"
+          className="live-investigation-glass flex items-center gap-2"
           style={{
             padding: '10px 20px',
-            background: demoRunning ? 'rgba(34,211,238,0.05)' : 'rgba(34,211,238,0.12)',
-            border: '1px solid rgba(34,211,238,0.3)',
             borderRadius: 8,
             color: '#22d3ee',
             fontWeight: 700,
@@ -438,7 +438,7 @@ export function Dashboard() {
         style={{ gridTemplateColumns: '2fr 1fr', gap: 16 }}
       >
         {/* Recent threats table */}
-        <div className="panel" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="panel dashboard-glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
           <div
             className="flex items-center justify-between px-4 py-3"
             style={{ borderBottom: '1px solid var(--color-border)' }}
@@ -507,7 +507,7 @@ export function Dashboard() {
         {/* Right column */}
         <div className="flex flex-col gap-4">
           {/* Trend sparkline */}
-          <div className="panel" style={{ padding: '16px' }}>
+          <div className="panel dashboard-glass-panel" style={{ padding: '16px' }}>
             <div className="section-title">14-Day Trend</div>
             <MiniSparkline data={metrics.trend} />
             <div className="flex items-center gap-4 mt-2">
@@ -523,7 +523,7 @@ export function Dashboard() {
           </div>
 
           {/* Live alerts */}
-          <div className="panel" style={{ padding: 0, overflow: 'hidden', flex: 1 }}>
+          <div className="panel dashboard-glass-panel" style={{ padding: 0, overflow: 'hidden', flex: 1 }}>
             <div
               className="flex items-center justify-between px-4 py-3"
               style={{ borderBottom: '1px solid var(--color-border)' }}
@@ -573,7 +573,7 @@ export function Dashboard() {
           </div>
 
           {/* Quick actions */}
-          <div className="panel" style={{ padding: '16px' }}>
+          <div className="panel dashboard-glass-panel" style={{ padding: '16px' }}>
             <div className="section-title">Quick Actions</div>
             <div className="flex flex-col gap-2">
               {[
@@ -584,11 +584,9 @@ export function Dashboard() {
                 <button
                   key={action.label}
                   onClick={() => navigate(action.to)}
-                  className="flex items-center gap-2 w-full transition-all-fast"
+                  className="quick-action-glass flex items-center gap-2 w-full transition-all-fast"
                   style={{
                     padding: '8px 12px',
-                    background: 'rgba(34,211,238,0.04)',
-                    border: '1px solid var(--color-border)',
                     borderRadius: 6,
                     color: 'var(--color-text-dim)',
                     cursor: 'pointer',
@@ -602,7 +600,7 @@ export function Dashboard() {
                     e.currentTarget.style.color = action.color;
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.background = 'rgba(34,211,238,0.04)';
+                    e.currentTarget.style.background = '';
                     e.currentTarget.style.borderColor = 'var(--color-border)';
                     e.currentTarget.style.color = 'var(--color-text-dim)';
                   }}

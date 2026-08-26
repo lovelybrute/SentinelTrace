@@ -56,11 +56,9 @@ export function TopBar({
 
   return (
     <header
-      className="flex items-center justify-between px-5"
+      className="glass-topbar flex items-center justify-between px-5"
       style={{
         height: 60,
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
         flexShrink: 0,
         zIndex: 40,
       }}
@@ -99,7 +97,7 @@ export function TopBar({
       <div className="hidden md:flex items-center">
         <button
           onClick={onOpenCommandPalette}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#0d1733] border border-cyan-500/20 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/40 text-xs font-mono transition-all shadow-sm group"
+          className="topbar-glass-control flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:border-cyan-500/40 text-xs font-mono transition-all shadow-sm group"
         >
           <Search size={13} className="text-cyan-400" />
           <span>Search IOC or jump to module...</span>
@@ -114,7 +112,7 @@ export function TopBar({
         {/* AI Copilot Trigger Button */}
         <button
           onClick={onOpenCopilot}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/70 text-xs font-mono transition-all shadow-[0_0_12px_rgba(34,211,238,0.15)]"
+          className="topbar-glass-control topbar-copilot flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-cyan-300 text-xs font-mono transition-all shadow-[0_0_12px_rgba(34,211,238,0.15)]"
           title="Open AI Forensic Copilot"
         >
           <Sparkles size={13} className="text-cyan-400 animate-pulse" />
@@ -124,11 +122,9 @@ export function TopBar({
         {/* Alert button */}
         <button
           onClick={() => navigate('/alerts')}
-          className="relative flex items-center justify-center rounded-lg transition-all"
+          className="topbar-icon-glass relative flex items-center justify-center rounded-lg transition-all"
           style={{
             width: 36, height: 36,
-            background: 'rgba(34,211,238,0.05)',
-            border: '1px solid var(--color-border)',
             color: 'var(--color-text-dim)',
             cursor: 'pointer',
           }}
@@ -173,11 +169,9 @@ export function TopBar({
             </div>
             <button
               onClick={signOut}
-              className="flex items-center justify-center rounded-lg transition-all"
+              className="topbar-icon-glass flex items-center justify-center rounded-lg transition-all"
               style={{
                 width: 30, height: 30,
-                background: 'transparent',
-                border: '1px solid var(--color-border)',
                 color: 'var(--color-text-muted)',
                 cursor: 'pointer',
                 marginLeft: 4,

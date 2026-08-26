@@ -14,7 +14,7 @@ export function Layout({ children }: LayoutProps) {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#020617]">
+    <div className="app-glass-shell flex h-screen overflow-hidden">
       <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((c) => !c)} />
       
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -22,7 +22,7 @@ export function Layout({ children }: LayoutProps) {
           onOpenCopilot={() => setCopilotOpen(true)}
           onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto bg-[#020617]">
+        <main className="glass-main flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

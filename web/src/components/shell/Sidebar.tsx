@@ -56,11 +56,9 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className="flex flex-col h-full transition-all duration-300 ease-in-out"
+      className="glass-sidebar flex flex-col h-full transition-all duration-300 ease-in-out"
       style={{
         width: collapsed ? 56 : 240,
-        background: 'var(--color-surface)',
-        borderRight: '1px solid var(--color-border)',
         flexShrink: 0,
         overflow: 'hidden',
       }}
@@ -181,8 +179,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
           style={{ borderTop: '1px solid var(--color-border)' }}
         >
           <div
-            className="flex items-center gap-2 p-2 rounded-lg"
-            style={{ background: 'rgba(34,211,238,0.05)', border: '1px solid var(--color-border)' }}
+            className="sidebar-analyst-glass flex items-center gap-2 p-2 rounded-lg"
           >
             <div
               className="flex-shrink-0 flex items-center justify-center rounded-full"

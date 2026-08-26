@@ -126,48 +126,29 @@ export function Login() {
 
   return (
     <div
-      className="relative flex items-center justify-center min-h-screen"
-      style={{ background: 'var(--color-bg)' }}
+      className="login-shell relative flex items-center justify-center min-h-screen"
     >
       <NetworkCanvas />
 
-      {/* Radial glow */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '30%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 600,
-          height: 600,
-          background: 'radial-gradient(circle, rgba(34,211,238,0.05) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
+      <div className="login-cyber-grid" aria-hidden="true" />
+      <div className="login-aurora login-aurora-cyan" aria-hidden="true" />
+      <div className="login-aurora login-aurora-red" aria-hidden="true" />
 
       {/* Login card */}
       <div
-        className="relative animate-fade-in"
+        className="login-glass-card relative animate-fade-in"
         style={{
           width: '100%',
-          maxWidth: 420,
-          padding: 40,
-          background: 'rgba(10,15,26,0.92)',
-          border: '1px solid rgba(34,211,238,0.2)',
-          borderRadius: 16,
-          backdropFilter: 'blur(20px)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6), 0 0 40px rgba(34,211,238,0.05)',
+          maxWidth: 480,
         }}
       >
         {/* Brand */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
             <div
-              className="flex items-center justify-center rounded-2xl"
+              className="login-brand-shield flex items-center justify-center rounded-2xl"
               style={{
                 width: 56, height: 56,
-                background: 'rgba(34,211,238,0.1)',
-                border: '1px solid rgba(34,211,238,0.3)',
               }}
             >
               <Shield size={28} color="#22d3ee" />
@@ -213,6 +194,22 @@ export function Login() {
           </div>
         </div>
 
+        {/* Permanent team signature — remains visible after the cinematic intro */}
+        <section className="team-signature-glass" aria-label="Team Brute and team leader">
+          <div className="team-signature-kicker">BUILT FOR SIH 2026 BY</div>
+          <div className="brute-blood-lockup" aria-label="TEAM BRUTE">
+            <span className="brute-blood-text" aria-hidden="true">TEAM BRUTE</span>
+            <span className="blood-drip blood-drip-one" aria-hidden="true" />
+            <span className="blood-drip blood-drip-two" aria-hidden="true" />
+            <span className="blood-drip blood-drip-three" aria-hidden="true" />
+            <span className="blood-drip blood-drip-four" aria-hidden="true" />
+          </div>
+          <div className="leader-identity">
+            <span>TEAM LEADER</span>
+            <strong>C PAVAN KUMAR</strong>
+          </div>
+        </section>
+
         {/* Error */}
         {error && (
           <div
@@ -239,7 +236,7 @@ export function Login() {
                 style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}
               />
               <input
-                className="st-input"
+                className="st-input glass-input"
                 style={{ paddingLeft: 36 }}
                 type="email"
                 placeholder="analyst@cert-in.gov.in"
@@ -258,7 +255,7 @@ export function Login() {
                 style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}
               />
               <input
-                className="st-input"
+                className="st-input glass-input"
                 style={{ paddingLeft: 36, paddingRight: 40 }}
                 type={showPass ? 'text' : 'password'}
                 placeholder="••••••••••••"
@@ -282,7 +279,7 @@ export function Login() {
 
           <button
             type="submit"
-            className="btn-primary flex items-center justify-center gap-2"
+            className="btn-primary login-primary-action flex items-center justify-center gap-2"
             style={{ marginTop: 4, height: 44 }}
             disabled={loading}
           >
@@ -311,11 +308,9 @@ export function Login() {
         <div className="relative">
           <button
             onClick={() => setDemoDropdown(d => !d)}
-            className="w-full flex items-center justify-center gap-2"
+            className="demo-glass-action w-full flex items-center justify-center gap-2"
             style={{
               padding: '11px 20px',
-              background: 'rgba(245,158,11,0.08)',
-              border: '1px solid rgba(245,158,11,0.25)',
               borderRadius: 8,
               color: '#f59e0b',
               fontWeight: 700,
@@ -331,10 +326,8 @@ export function Login() {
 
           {demoDropdown && (
             <div
-              className="absolute w-full mt-2 rounded-lg overflow-hidden animate-fade-in"
+              className="demo-glass-menu absolute w-full mt-2 rounded-lg overflow-hidden animate-fade-in"
               style={{
-                background: 'var(--color-surface-2)',
-                border: '1px solid var(--color-border-2)',
                 zIndex: 10,
               }}
             >
@@ -375,20 +368,9 @@ export function Login() {
         </div>
 
 
-        <div
-  className="text-center mt-5"
-  style={{ fontSize: 11, color: 'var(--color-text-muted)' }}
->
-  <div style={{ fontWeight: 700, color: '#22d3ee', marginBottom: 4 }}>
-    Team Brute
-  </div>
-  <div>
-    Team Leader: Pavan
-  </div>
-  <div style={{ marginTop: 4 }}>
-    SentinelTrace v1.0 · SIH 26106 · CERT-In Aligned
-  </div>
-</div>
+        <div className="login-version-line text-center mt-5">
+          SentinelTrace v1.0 · SIH 26106 · CERT-In Aligned
+        </div>
       </div>
     </div>
   );
