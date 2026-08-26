@@ -3,7 +3,11 @@ import { Shield, Eye, EyeOff, Lock, Mail, ChevronRight, AlertTriangle } from 'lu
 import { useSession } from '@/context/SessionContext';
 
 /* ------------------------------------------------------------------ */
-/* Animated network canvas background                                  */
+ /* Animated network canvas background                                  */
+/* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+ /* Animated 3D-inspired network canvas background                      */
 /* ------------------------------------------------------------------ */
 
 function NetworkCanvas() {
@@ -20,6 +24,7 @@ function NetworkCanvas() {
     interface Particle {
       x: number; y: number;
       vx: number; vy: number;
+      hue: number;
     }
 
     const N = 60;
@@ -33,8 +38,9 @@ function NetworkCanvas() {
         particles.push({
           x: Math.random() * W,
           y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: (Math.random() - 0.5) * 0.6,
+          hue: Math.random() > 0.5 ? 220 : 0, // Cyan or red palette
         });
       }
     };
@@ -50,7 +56,9 @@ function NetworkCanvas() {
         if (p.y < 0 || p.y > H) p.vy *= -1;
       }
 
-      // Draw edges
+      // Draw edges (crypotkonyan cyan network)
+      ctx.strokeStyle = 'rgba(34,211,238,0.08)';
+      ctx.lineWidth = 0.5;
       for (let i = 0; i < N; i++) {
         for (let j = i + 1; j < N; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -58,8 +66,6 @@ function NetworkCanvas() {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 130) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(34,211,238,${0.08 * (1 - dist / 130)})`;
-            ctx.lineWidth = 0.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
@@ -67,11 +73,12 @@ function NetworkCanvas() {
         }
       }
 
-      // Draw nodes
+      // Draw nodes with color hue
       for (const p of particles) {
         ctx.beginPath();
+        const color = p.hue === 220 ? 'rgba(34,211,238,0.35)' : 'rgba(239,68,68,0.35)';
         ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(34,211,238,0.35)';
+        ctx.fillStyle = color;
         ctx.fill();
       }
 
@@ -195,14 +202,44 @@ export function Login() {
         </div>
 
         {/* Permanent team signature — remains visible after the cinematic intro */}
+        <style>{`
+          /* TEAM BRUTE blood drip animation keyframes */
+          @keyframes blood-drip-1 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(30px) rotate(5deg); opacity: 1; } }
+          @keyframes blood-drip-2 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(25px) rotate(-3deg); opacity: 1; } }
+          @keyframes blood-drip-3 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(35px) rotate(2deg); opacity: 1; } }
+          @keyframes blood-drip-4 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(20px) rotate(4deg); opacity: 1; } }
+
+          /* Reduced-motion: static version */
+          .static-brute .brute-blood-text,
+          .static-brute .static-drip { opacity: 1; }
+
+          /* Normal-motion: animated version */
+          @media (prefers-reduced-motion: no-preference) {
+            .brute-blood-lockup.animated-brute .brute-blood-text {
+              animation: blood-drip-1 0.8s ease-out forwards,
+                        blood-drip-2 0.8s ease-out 0.1s forwards,
+                        blood-drip-3 0.8s ease-out 0.2s forwards,
+                        blood-drip-4 0.8s ease-out 0.3s forwards;
+            }
+            .brute-blood-lockup.animated-brute .blood-drip-one { animation-delay: 0.1s; }
+            .brute-blood-lockup.animated-brute .blood-drip-two { animation-delay: 0.2s; }
+            .brute-blood-lockup.animated-brute .blood-drip-three { animation-delay: 0.2s; }
+            .brute-blood-lockup.animated-brute .blood-drip-four { animation-delay: 0.3s; }
+            .brute-blood-lockup.animated-brute .static-drip { display: none; }
+            .brute-blood-lockup.static-brute .brute-blood-text { animation: none; }
+            .brute-blood-lockup.static-brute .static-drip { display: block; }
+          }
+        `}</style>
+
+        {/* Permanent team signature — remains visible after the cinematic intro */}
         <section className="team-signature-glass" aria-label="Team Brute">
           <div className="team-signature-kicker">BUILT FOR SIH 2026 BY</div>
-          <div className="brute-blood-lockup" aria-label="TEAM BRUTE">
+          <div className="brute-blood-lockup static-brute" aria-label="TEAM BRUTE">
             <span className="brute-blood-text" aria-hidden="true">TEAM BRUTE</span>
-            <span className="blood-drip blood-drip-one" aria-hidden="true" />
-            <span className="blood-drip blood-drip-two" aria-hidden="true" />
-            <span className="blood-drip blood-drip-three" aria-hidden="true" />
-            <span className="blood-drip blood-drip-four" aria-hidden="true" />
+            <span className="blood-drip static-drip" aria-hidden="true" />
+            <span className="blood-drip static-drip" aria-hidden="true" />
+            <span className="blood-drip static-drip" aria-hidden="true" />
+            <span className="blood-drip static-drip" aria-hidden="true" />
           </div>
         </section>
 
