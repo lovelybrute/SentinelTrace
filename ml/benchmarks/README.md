@@ -1,8 +1,8 @@
 # SentinelTrace challenge benchmarks
 
-These files are deterministic, privacy-safe, **synthetic regression tests**.
-They are not scraped mail, are not used to train the published model, and must
-not be described as independent real-world validation.
+These files are deterministic, privacy-safe, **synthetic robustness training and
+regression records**. The current model uses them for robustness augmentation;
+their post-training score must not be described as independent validation.
 
 Regenerate and evaluate them from the repository root:
 
