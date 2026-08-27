@@ -38,28 +38,5 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('three')) {
-              return 'three';
-            }
-            if (id.includes('recharts')) {
-              return 'charts';
-            }
-            if (id.includes('d3')) {
-              return 'd3';
-            }
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-              return 'react';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-          }
-        },
-      },
-    },
   },
 });
