@@ -180,6 +180,16 @@ export function correlate(input: CorrelateInput): EmailAnalysis {
     bodyPreview: wire.evidence.body_preview || bodyText.slice(0, 500),
     score,
     assessment,
+    modelEvidence: {
+      validatedPhishingProbability:
+        wire.threat_assessment.score_breakdown?.validated_phishing_probability ?? null,
+      attackSubtype:
+        wire.threat_assessment.score_breakdown?.prototype_primary_classification ?? null,
+      attackSubtypeConfidence:
+        wire.threat_assessment.score_breakdown?.prototype_confidence ?? null,
+      probabilitySource:
+        wire.threat_assessment.score_breakdown?.ml_probability_source ?? null,
+    },
     authentication: auth.summary,
     relayChain: hops,
     originAssessment,
