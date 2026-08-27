@@ -1,0 +1,54 @@
+{
+  "evaluation_status": "SYNTHETIC_CHALLENGE_ONLY",
+  "evaluated_at": "2026-08-27T14:34:23.744166+00:00",
+  "training_performed": false,
+  "dataset": "ml/benchmarks/all_synthetic_challenges.jsonl",
+  "dataset_sha256": "30751523c31762b4c0f40707d54bafc43b1bc84616d78e854f3915e38a85688e",
+  "records": 400,
+  "label_distribution": {
+    "LEGITIMATE": 100,
+    "PHISHING": 300
+  },
+  "accuracy": 0.6725,
+  "precision_macro": 0.5694,
+  "recall_macro": 0.5717,
+  "f1_macro": 0.5704,
+  "confusion_matrix": [
+    [
+      37,
+      63
+    ],
+    [
+      68,
+      232
+    ]
+  ],
+  "classification_report": {
+    "LEGITIMATE": {
+      "precision": 0.3523809523809524,
+      "recall": 0.37,
+      "f1-score": 0.36097560975609755,
+      "support": 100.0
+    },
+    "PHISHING": {
+      "precision": 0.7864406779661017,
+      "recall": 0.7733333333333333,
+      "f1-score": 0.7798319327731092,
+      "support": 300.0
+    },
+    "accuracy": 0.6725,
+    "macro avg": {
+      "precision": 0.5694108151735271,
+      "recall": 0.5716666666666667,
+      "f1-score": 0.5704037712646034,
+      "support": 400.0
+    },
+    "weighted avg": {
+      "precision": 0.6779257465698144,
+      "recall": 0.6725,
+      "f1-score": 0.6751178520188563,
+      "support": 400.0
+    }
+  },
+  "limitations": "Synthetic regression evidence only. It does not replace recent, independently labeled real-world validation."
+}
