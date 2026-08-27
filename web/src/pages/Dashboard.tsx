@@ -328,6 +328,12 @@ function DropZone({ onFile }: { onFile: (file: File) => void }) {
 /* ─────────────────────────────────────────────────────────── */
 
 export function Dashboard() {
+  const [visualMode, setVisualMode] = React.useState(() => localStorage.getItem('sentineltrace_visual_mode') || 'balanced');
+  React.useEffect(() => {
+    const update = (event: Event) => setVisualMode((event as CustomEvent<string>).detail || 'balanced');
+    window.addEventListener('sentineltrace:visual-mode', update);
+    return () => window.removeEventListener('sentineltrace:visual-mode', update);
+  }, []);
   const { metrics, history, setCurrentAnalysis, addToHistory } = useAnalysis();
   const { session } = useSession();
   const { alerts } = useAlerts();
@@ -537,7 +543,14 @@ export function Dashboard() {
               </div>
             </div>
           }>
-            <ThreatGlobe countryThreats={countryThreats} height={420} />
+            {visualMode === 'lite' ? (
+              <div className="dashboard-globe-lite" role="img" aria-label="Static global threat overview">
+                <div className="dashboard-globe-lite-grid" />
+                <strong>GLOBAL THREAT MAP · LITE MODE</strong>
+                <span>{countryThreats.length} observed country clusters</span>
+                <button type="button" onClick={() => { localStorage.setItem('sentineltrace_visual_mode', 'balanced'); setVisualMode('balanced'); }}>LOAD INTERACTIVE 3D</button>
+              </div>
+            ) : <ThreatGlobe countryThreats={countryThreats} height={420} />}
           </Suspense>
         </div>
 
