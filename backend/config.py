@@ -9,6 +9,8 @@ class Settings(BaseModel):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./sentineltrace.db")
     JWT_SECRET: str = os.getenv("JWT_SECRET", "sentineltrace-dev-secret-key-change-in-production-2026")
+    AUTH_USERS_JSON: str = os.getenv("AUTH_USERS_JSON", "")
+    ACCESS_TOKEN_TTL_MINUTES: int = int(os.getenv("ACCESS_TOKEN_TTL_MINUTES", "480"))
     ALLOWED_ORIGINS: List[str] = [
         o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()
     ]
