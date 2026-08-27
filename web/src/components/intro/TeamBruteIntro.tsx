@@ -16,7 +16,7 @@ import React, {
   useState,
   Suspense,
 } from 'react';
-import { Shield, ChevronRight, Zap, Radio } from 'lucide-react';
+import { Shield, ChevronRight, Zap, Radio, Volume2, VolumeX, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Stars, Sphere } from '@react-three/drei';
@@ -34,6 +34,63 @@ function useStableCallback<T extends (...args: unknown[]) => unknown>(fn: T): T 
 
 /** Replace NodeJS.Timeout with the correct DOM type */
 type TimerId = ReturnType<typeof setTimeout>;
+
+type VoiceProfileId = 'command' | 'calm' | 'synthetic';
+
+const VOICE_PROFILES: Array<{
+  id: VoiceProfileId;
+  name: string;
+  description: string;
+  rate: number;
+  pitch: number;
+  preferredNames: string[];
+}> = [
+  {
+    id: 'command',
+    name: 'Command',
+    description: 'Deep, authoritative SOC welcome',
+    rate: 0.88,
+    pitch: 0.72,
+    preferredNames: ['Microsoft David', 'Google UK English Male', 'Daniel', 'Alex'],
+  },
+  {
+    id: 'calm',
+    name: 'Calm Intelligence',
+    description: 'Clear, composed forensic assistant',
+    rate: 0.92,
+    pitch: 1.02,
+    preferredNames: ['Microsoft Zira', 'Google UK English Female', 'Samantha', 'Karen'],
+  },
+  {
+    id: 'synthetic',
+    name: 'Neural System',
+    description: 'Measured cyber-system delivery',
+    rate: 0.78,
+    pitch: 0.86,
+    preferredNames: ['Microsoft Mark', 'Google US English', 'Moira', 'Tessa'],
+  },
+];
+
+const WELCOME_MESSAGE =
+  'Welcome to SentinelTrace. Initializing forensic intelligence systems. Developed by Team Brute.';
+
+function createVoiceUtterance(profileId: VoiceProfileId, text: string) {
+  if (!('speechSynthesis' in window)) return null;
+  const profile = VOICE_PROFILES.find((item) => item.id === profileId) ?? VOICE_PROFILES[0];
+  const utterance = new SpeechSynthesisUtterance(text);
+  const voices = window.speechSynthesis.getVoices();
+  const englishVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith('en'));
+  const preferredVoice = profile.preferredNames
+    .map((name) => englishVoices.find((voice) => voice.name.toLowerCase().includes(name.toLowerCase())))
+    .find(Boolean);
+
+  utterance.voice = preferredVoice ?? englishVoices[0] ?? voices[0] ?? null;
+  utterance.lang = utterance.voice?.lang || 'en-US';
+  utterance.rate = profile.rate;
+  utterance.pitch = profile.pitch;
+  utterance.volume = 0.92;
+  return utterance;
+}
 
 /* ─────────────────────────────────────────────────────────── */
 /* Animated counter (no NodeJS types)                           */
@@ -344,6 +401,14 @@ interface TeamBruteIntroProps {
 
 export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntroProps) {
   const [stage, setStage] = useState(0);
+  const [started, setStarted] = useState(false);
+  const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<VoiceProfileId>(() => {
+    const saved = localStorage.getItem('sentineltrace_intro_voice');
+    return VOICE_PROFILES.some((profile) => profile.id === saved)
+      ? (saved as VoiceProfileId)
+      : 'command';
+  });
 
   // Detect mobile / low-perf: skip WebGL canvas on small screens
   const isMobile = window.innerWidth < 768;
@@ -355,8 +420,49 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
   const complete = useStableCallback(onComplete);
 
   const handleSkip = useStableCallback(() => {
+    window.speechSynthesis?.cancel();
     onComplete();
   });
+
+  const beginSequence = useCallback(() => {
+    sessionStorage.setItem('sentineltrace_intro_seen', 'true');
+    setIsAnnouncing(false);
+    setStarted(true);
+  }, []);
+
+  const previewVoice = useCallback((profileId: VoiceProfileId) => {
+    const utterance = createVoiceUtterance(profileId, `SentinelTrace ${VOICE_PROFILES.find((item) => item.id === profileId)?.name} voice ready.`);
+    if (!utterance) return;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const startWithSound = useCallback(() => {
+    localStorage.setItem('sentineltrace_intro_voice', selectedVoice);
+    const utterance = createVoiceUtterance(selectedVoice, WELCOME_MESSAGE);
+    if (!utterance) {
+      beginSequence();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    setIsAnnouncing(true);
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      beginSequence();
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    window.speechSynthesis.speak(utterance);
+    window.setTimeout(finish, 6500);
+  }, [beginSequence, selectedVoice]);
+
+  const startSilently = useCallback(() => {
+    window.speechSynthesis?.cancel();
+    beginSequence();
+  }, [beginSequence]);
 
   // ── Decide whether to show at all ──
   useEffect(() => {
@@ -367,7 +473,11 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
       onComplete();
       return;
     }
-    sessionStorage.setItem('sentineltrace_intro_seen', 'true');
+  }, [forcePlay, prefersReducedMotion, onComplete]);
+
+  // ── Begin the cinematic only after the visitor chooses sound ──
+  useEffect(() => {
+    if (!started) return;
 
     // Sequence timings (total ~12 s)
     const timers: TimerId[] = [
@@ -385,7 +495,7 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
     ];
 
     return () => timers.forEach(clearTimeout);
-  }, [forcePlay, prefersReducedMotion, onComplete, complete]);
+  }, [started, complete]);
 
   // Pause RAF when tab is hidden
   useEffect(() => {
@@ -395,6 +505,79 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
     document.addEventListener('visibilitychange', onVis);
     return () => document.removeEventListener('visibilitychange', onVis);
   }, []);
+
+  if (!started) {
+    return (
+      <div className="intro-voice-gate fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden px-5">
+        <div className="intro-voice-orb intro-voice-orb-cyan" />
+        <div className="intro-voice-orb intro-voice-orb-violet" />
+        <section className="intro-voice-panel" aria-labelledby="intro-voice-title">
+          <div className="intro-voice-icon"><Volume2 size={25} /></div>
+          <p className="intro-voice-eyebrow">SECURE AUDIO HANDSHAKE</p>
+          <h1 id="intro-voice-title">Choose your welcome voice</h1>
+          <p className="intro-voice-copy">
+            Preview a system voice, then enter the SentinelTrace cinematic experience.
+          </p>
+
+          <div className="intro-voice-options" role="radiogroup" aria-label="Welcome voice">
+            {VOICE_PROFILES.map((profile) => {
+              const active = selectedVoice === profile.id;
+              return (
+                <button
+                  type="button"
+                  key={profile.id}
+                  role="radio"
+                  aria-checked={active}
+                  className={`intro-voice-option${active ? ' active' : ''}`}
+                  onClick={() => setSelectedVoice(profile.id)}
+                >
+                  <span>
+                    <strong>{profile.name}</strong>
+                    <small>{profile.description}</small>
+                  </span>
+                  <span
+                    className="intro-voice-preview"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Preview ${profile.name}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setSelectedVoice(profile.id);
+                      previewVoice(profile.id);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setSelectedVoice(profile.id);
+                        previewVoice(profile.id);
+                      }
+                    }}
+                  >
+                    <Play size={12} fill="currentColor" />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            className="intro-enter-sound"
+            onClick={startWithSound}
+            disabled={isAnnouncing}
+          >
+            <Volume2 size={17} />
+            {isAnnouncing ? 'VOICE HANDSHAKE ACTIVE…' : 'ENTER WITH SOUND'}
+          </button>
+          <button type="button" className="intro-enter-silent" onClick={startSilently}>
+            <VolumeX size={14} /> ENTER SILENTLY
+          </button>
+          <p className="intro-voice-note">Voice availability depends on this device. Your selection stays on this browser.</p>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <motion.div
