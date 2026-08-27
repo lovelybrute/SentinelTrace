@@ -1,25 +1,29 @@
 {
   "validation_status": "VALIDATED_HOLDOUT",
-  "trained_at": "2026-08-26T15:17:15.535914+00:00",
-  "dataset_sha256": "4f063f18ae79f560a25b3edb9b28d1c1d3873e2e4df97b2e3ad6a7fb1d18ed35",
-  "dataset_records": 106159,
-  "dataset_name": "MeAJOR v2.0 cleaned/preprocessed corpus",
-  "dataset_citation": "Cardoso et al., MeAJOR, Zenodo DOI 10.5281/zenodo.18471483 (2026)",
+  "trained_at": "2026-08-27T16:05:33.057575+00:00",
+  "dataset_sha256": "5e08258a56da361942d33515c3317d632958858546a2b0faeb75db8c9cd187f6",
+  "dataset_records": 106559,
+  "dataset_name": "MeAJOR v2.0 plus SentinelTrace synthetic robustness augmentation",
+  "dataset_citation": "Cardoso et al., DOI 10.5281/zenodo.18471483; SentinelTrace synthetic benchmark v1",
   "source_distribution": {
+    "synthetic:bec_invoice_fraud": 100,
+    "synthetic:credential_phishing": 100,
+    "synthetic:evasive_phishing": 100,
+    "synthetic:legitimate_institutional": 100,
     "trec5": 47293,
     "trec6": 14932,
     "trec7": 43934
   },
-  "label_scope": "Publisher labels map 0 to benign and 1 to phishing; this uploaded release contains TREC-5/6/7 sources, whose positive class includes broad unsolicited/malicious email and is therefore a phishing-proxy label rather than confirmed phishing-only ground truth.",
-  "train_records": 84927,
-  "test_records": 21232,
+  "label_scope": "MeAJOR publisher proxy labels plus clearly marked synthetic robustness examples; independent Zenodo validation remains excluded from training.",
+  "train_records": 85247,
+  "test_records": 21312,
   "labels": [
     "LEGITIMATE",
     "PHISHING"
   ],
   "test_class_distribution": {
-    "LEGITIMATE": 11661,
-    "PHISHING": 9571
+    "LEGITIMATE": 11681,
+    "PHISHING": 9631
   },
   "split": {
     "method": "deduplicated stratified holdout",
@@ -30,91 +34,137 @@
   "feature_contract": "sentineltrace_text_v1",
   "models": {
     "logistic_regression": {
-      "accuracy": 0.9874,
-      "precision_macro": 0.9871,
-      "recall_macro": 0.9874,
-      "f1_macro": 0.9873,
+      "accuracy": 0.9885,
+      "precision_macro": 0.9882,
+      "recall_macro": 0.9885,
+      "f1_macro": 0.9884,
       "confusion_matrix": [
         [
-          11509,
-          152
+          11542,
+          139
         ],
         [
-          116,
-          9455
+          107,
+          9524
         ]
       ],
       "classification_report": {
         "LEGITIMATE": {
-          "precision": 0.990021505376344,
-          "recall": 0.9869650973329903,
-          "f1-score": 0.9884909387614876,
-          "support": 11661.0
+          "precision": 0.9908146622027642,
+          "recall": 0.9881003338755243,
+          "f1-score": 0.9894556365195027,
+          "support": 11681.0
         },
         "PHISHING": {
-          "precision": 0.984178203393359,
-          "recall": 0.987880054330791,
-          "f1-score": 0.9860256543956617,
-          "support": 9571.0
+          "precision": 0.9856152333643796,
+          "recall": 0.9888900425708649,
+          "f1-score": 0.9872499222556235,
+          "support": 9631.0
         },
-        "accuracy": 0.9873775433308214,
+        "accuracy": 0.9884572072072072,
         "macro avg": {
-          "precision": 0.9870998543848515,
-          "recall": 0.9874225758318906,
-          "f1-score": 0.9872582965785747,
-          "support": 21232.0
+          "precision": 0.9882149477835719,
+          "recall": 0.9884951882231946,
+          "f1-score": 0.988352779387563,
+          "support": 21312.0
         },
         "weighted avg": {
-          "precision": 0.9873874509641761,
-          "recall": 0.9873775433308214,
-          "f1-score": 0.9873796333420586,
-          "support": 21232.0
+          "precision": 0.9884650141574148,
+          "recall": 0.9884572072072072,
+          "f1-score": 0.9884588631488467,
+          "support": 21312.0
         }
       }
     },
     "sgd_log_loss": {
-      "accuracy": 0.9802,
-      "precision_macro": 0.9799,
-      "recall_macro": 0.9801,
-      "f1_macro": 0.98,
+      "accuracy": 0.9812,
+      "precision_macro": 0.9809,
+      "recall_macro": 0.9812,
+      "f1_macro": 0.9811,
       "confusion_matrix": [
         [
-          11442,
-          219
+          11465,
+          216
         ],
         [
-          201,
-          9370
+          184,
+          9447
         ]
       ],
       "classification_report": {
         "LEGITIMATE": {
-          "precision": 0.9827364081422314,
-          "recall": 0.9812194494468742,
-          "f1-score": 0.981977342945417,
-          "support": 11661.0
+          "precision": 0.9842046527598936,
+          "recall": 0.9815084324972178,
+          "f1-score": 0.9828546935276468,
+          "support": 11681.0
         },
         "PHISHING": {
-          "precision": 0.9771613306914172,
-          "recall": 0.9789990596593877,
-          "f1-score": 0.9780793319415448,
-          "support": 9571.0
+          "precision": 0.9776466935734244,
+          "recall": 0.9808950264770013,
+          "f1-score": 0.9792681662693066,
+          "support": 9631.0
         },
-        "accuracy": 0.9802185380557649,
+        "accuracy": 0.9812312312312312,
         "macro avg": {
-          "precision": 0.9799488694168244,
-          "recall": 0.9801092545531309,
-          "f1-score": 0.980028337443481,
-          "support": 21232.0
+          "precision": 0.9809256731666589,
+          "recall": 0.9812017294871096,
+          "f1-score": 0.9810614298984767,
+          "support": 21312.0
         },
         "weighted avg": {
-          "precision": 0.980223264477869,
-          "recall": 0.9802185380557649,
-          "f1-score": 0.9802201903776863,
-          "support": 21232.0
+          "precision": 0.9812410780167965,
+          "recall": 0.9812312312312312,
+          "f1-score": 0.9812339238192631,
+          "support": 21312.0
         }
       }
     }
   },
-  "limitations": "Holdout results apply only to the supplied corpus. Random holdout can overestimate generalization when messages share corpus-specific patterns; independent cross-dataset and recent real-world validation remain required."
+  "limitations": "Holdout results apply only to the supplied corpus. Random holdout can overestimate generalization when messages share corpus-specific patterns; independent cross-dataset and recent real-world validation remain required.",
+  "external_validation": {
+    "evaluation_status": "INDEPENDENT_MIXED_REAL_SYNTHETIC_VALIDATION",
+    "dataset_name": "Phishing validation emails dataset",
+    "dataset_citation": "Miltchev, Rangelov, Genchev (2024), DOI 10.5281/zenodo.13474746",
+    "dataset_sha256": "e320dff86545368509d4ceeb944733e68d59716a73d1266144811102f4cff053",
+    "records": 2000,
+    "training_dataset_exclusion_verified": true,
+    "before": {
+      "accuracy": 0.752,
+      "precision_macro": 0.7751,
+      "recall_macro": 0.752,
+      "f1_macro": 0.7467,
+      "confusion_matrix": [
+        [
+          607,
+          393
+        ],
+        [
+          103,
+          897
+        ]
+      ]
+    },
+    "after": {
+      "accuracy": 0.8035,
+      "precision_macro": 0.8589,
+      "recall_macro": 0.8035,
+      "f1_macro": 0.7956,
+      "confusion_matrix": [
+        [
+          607,
+          393
+        ],
+        [
+          0,
+          1000
+        ]
+      ]
+    },
+    "delta": {
+      "accuracy": 0.0515,
+      "f1_macro": 0.0489
+    },
+    "deployment_decision": "PROMOTED: independent accuracy and macro-F1 improved; false-positive rate remains a documented limitation.",
+    "limitations": "Independent corpus combines real-world and artificial emails per its publisher; it remains English-language and may not represent current campaigns or Indian-language traffic."
+  }
 }
