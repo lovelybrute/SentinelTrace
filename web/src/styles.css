@@ -548,9 +548,10 @@ body {
 .login-intel-heading h1 { margin: 9px 0 10px; color: #f1fdff; font: 800 clamp(2rem, 4vw, 3.8rem)/1.02 var(--font-display); letter-spacing: -.04em; }
 .login-intel-heading p { max-width: 470px; margin: 0; color: #71869c; font-size: 11px; line-height: 1.65; }
 
-.login-globe-frame { position: relative; z-index: 2; min-height: 420px; margin-top: -22px; }
-.login-globe-frame > div:first-child { position: absolute; inset: 0; }
+.login-globe-frame { position: relative; z-index: 2; min-height: 500px; margin-top: -22px; overflow: hidden; }
+.login-globe-frame > div:first-child { position: absolute; inset: 0; height: 100% !important; }
 .login-globe-frame canvas { filter: drop-shadow(0 0 34px rgba(34, 211, 238, 0.08)); }
+.login-globe-loading { display: grid; height: 100%; place-items: center; color: #527086; font: 8px var(--font-mono); letter-spacing: .14em; }
 .login-globe-scan { position: absolute; top: 12%; left: 50%; width: min(430px, 62%); aspect-ratio: 1; pointer-events: none; border: 1px solid rgba(103, 232, 249, 0.09); border-radius: 50%; transform: translateX(-50%); box-shadow: 0 0 80px rgba(34, 211, 238, 0.05), inset 0 0 60px rgba(34, 211, 238, 0.03); }
 
 .login-intel-tag { position: absolute; display: flex; min-width: 142px; padding: 9px 10px; align-items: center; gap: 8px; color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 9px; background: rgba(2, 12, 25, 0.86); box-shadow: 0 12px 30px rgba(0,0,0,.34); }
