@@ -82,20 +82,15 @@ export function Login() {
       <div className="login-command-glow login-command-glow-cyan" aria-hidden="true" />
       <div className="login-command-glow login-command-glow-red" aria-hidden="true" />
 
-      <header className="login-command-header">
-        <div className="login-command-brand">
-          <span><Shield size={17} /></span>
-          <div><strong>SENTINELTRACE</strong><small>AI FORENSIC INTELLIGENCE</small></div>
-        </div>
-        <div className="login-command-health">
-          <span><i /> AI ENGINE ONLINE</span>
-          <span><i /> FORENSIC DB SECURE</span>
-          <b>SIH 26106</b>
-        </div>
-      </header>
-
       <div className="login-command-layout">
         <section className="login-intel-stage" aria-label="Live global threat intelligence">
+          <div className="login-intel-brand-row">
+            <div className="login-command-brand">
+              <span><Shield size={20} /></span>
+              <div><strong>SENTINELTRACE</strong><small>AI FORENSIC INTELLIGENCE</small></div>
+            </div>
+            <div className="login-command-health"><span><i /> SYSTEM ONLINE</span><b>SIH 26106</b></div>
+          </div>
           <div className="login-intel-heading">
             <span>GLOBAL RELAY INTELLIGENCE</span>
             <h1>See the infrastructure<br />behind the message.</h1>
