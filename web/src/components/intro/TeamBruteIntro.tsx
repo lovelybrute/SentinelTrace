@@ -54,10 +54,22 @@ const VOICE_PROFILES: Array<{
     preferredNames: [
       'Microsoft David',
       'Microsoft Mark',
+      'Microsoft Guy',
+      'Microsoft George',
+      'Microsoft Ravi',
+      'Microsoft Hemant',
       'Google UK English Male',
       'Daniel',
       'Alex',
       'Fred',
+      'Rishi',
+      'Arthur',
+      'Aaron',
+      'Brian',
+      'Matthew',
+      'Christopher',
+      'Eric',
+      'Ryan',
     ],
   },
 ];
@@ -68,15 +80,19 @@ const WELCOME_MESSAGE =
 function createVoiceUtterance(profileId: VoiceProfileId, text: string) {
   if (!('speechSynthesis' in window)) return null;
   const profile = VOICE_PROFILES.find((item) => item.id === profileId) ?? VOICE_PROFILES[0];
-  const utterance = new SpeechSynthesisUtterance(text);
   const voices = window.speechSynthesis.getVoices();
   const englishVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith('en'));
   const preferredVoice = profile.preferredNames
     .map((name) => englishVoices.find((voice) => voice.name.toLowerCase().includes(name.toLowerCase())))
     .find(Boolean);
 
-  utterance.voice = preferredVoice ?? englishVoices[0] ?? voices[0] ?? null;
-  utterance.lang = utterance.voice?.lang || 'en-US';
+  // Never fall back to the browser's default voice: it may be female.
+  // If this device has no recognised male voice, the intro continues silently.
+  if (!preferredVoice) return null;
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.voice = preferredVoice;
+  utterance.lang = preferredVoice.lang || 'en-US';
   utterance.rate = profile.rate;
   utterance.pitch = profile.pitch;
   utterance.volume = 0.92;
@@ -564,7 +580,9 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
           <button type="button" className="intro-enter-silent" onClick={startSilently}>
             <VolumeX size={14} /> ENTER SILENTLY
           </button>
-          <p className="intro-voice-note">Voice availability depends on this device. Your selection stays on this browser.</p>
+          <p className="intro-voice-note">
+            Male voice only. If this device has no compatible male system voice, the intro enters silently.
+          </p>
         </section>
       </div>
     );
