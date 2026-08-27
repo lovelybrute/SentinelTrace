@@ -243,9 +243,42 @@ function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalys
   const color = score.level === 'CRITICAL' ? '#ef4444' : score.level === 'HIGH' ? '#f97316' : score.level === 'MEDIUM' ? '#f59e0b' : '#22c55e';
   const classLabel = assessment.classification.replace(/_/g, ' ');
   const modelEvidence = analysis.modelEvidence;
+  const userVerdict = score.level === 'CRITICAL' || score.level === 'HIGH'
+    ? {
+        label: 'Dangerous email',
+        summary: 'Do not click links, open attachments, reply, or follow payment instructions.',
+        color: '#ef4444',
+      }
+    : score.level === 'MEDIUM'
+      ? {
+          label: 'Needs human review',
+          summary: 'Some warning signs were detected. Verify the sender using a trusted contact method.',
+          color: '#f59e0b',
+        }
+      : {
+          label: 'Likely safe',
+          summary: 'No strong threat evidence was found, but unexpected requests should still be verified.',
+          color: '#22c55e',
+        };
 
   return (
     <div className="panel-elevated p-6 border-l-4" style={{ borderLeftColor: color }}>
+      <div
+        className="mb-5 rounded-xl border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        style={{ borderColor: `${userVerdict.color}55`, background: `${userVerdict.color}0d` }}
+        role="status"
+      >
+        <div>
+          <div className="text-lg font-black" style={{ color: userVerdict.color }}>{userVerdict.label}</div>
+          <p className="mt-1 text-sm text-slate-300">{userVerdict.summary}</p>
+        </div>
+        <div className="text-xs font-mono text-slate-400 sm:text-right">
+          <div>Recommended decision</div>
+          <div className="font-bold text-slate-100">
+            {score.level === 'LOW' || score.level === 'INFO' ? 'ALLOW WITH CAUTION' : 'HOLD AND INVESTIGATE'}
+          </div>
+        </div>
+      </div>
       <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
         {/* Threat Gauge */}
         <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-[#080e21]/70 border border-cyan-500/15 w-full lg:w-auto">
@@ -255,8 +288,9 @@ function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalys
         {/* Classification Narrative & Score Breakdown */}
         <div className="flex-1 space-y-4 w-full">
           <div>
-            <div className="text-[10px] font-mono font-bold text-cyan-400 tracking-widest uppercase">
+            <div className="text-[10px] font-mono font-bold text-cyan-400 tracking-widest uppercase flex items-center gap-1.5">
               PRIMARY CLASSIFICATION & CONFIDENCE
+              <span title="Confidence shows how strongly the classifier prefers this attack category. It is different from the overall 0–100 threat score."><Info size={12} aria-label="About classification confidence" /></span>
             </div>
             <div className="text-2xl font-black tracking-tight text-white flex items-center gap-3 mt-1">
               <span>{classLabel}</span>
@@ -269,6 +303,10 @@ function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalys
             </p>
           </div>
 
+          <details className="rounded-xl border border-slate-800 bg-[#050a18]/50" open>
+            <summary className="cursor-pointer select-none px-3 py-2 text-[11px] font-mono font-bold text-slate-300 hover:text-cyan-300">
+              How AI contributed to this result
+            </summary>
           {(modelEvidence.validatedPhishingProbability !== null || modelEvidence.attackSubtype) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3">
@@ -297,7 +335,7 @@ function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalys
           )}
 
           {/* Explainable Factor Breakdown ("WHY?") */}
-          <div>
+          <div className="p-3">
             <div className="text-[10px] font-mono font-bold text-slate-400 tracking-wider uppercase mb-2 flex items-center gap-1.5">
               <Sparkles size={12} className="text-cyan-400" />
               <span>EXPLAINABLE RISK SIGNALS & WEIGHTS</span>
@@ -321,6 +359,23 @@ function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalys
               ))}
             </div>
           </div>
+          </details>
+
+          {assessment.recommendedActions.length > 0 && (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3">
+              <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-300">
+                What you should do now
+              </div>
+              <ol className="mt-2 space-y-1.5 text-xs text-slate-300">
+                {assessment.recommendedActions.slice(0, 3).map((action, index) => (
+                  <li key={`${action.kind}-${index}`} className="flex gap-2">
+                    <span className="font-bold text-emerald-400">{index + 1}.</span>
+                    <span>{action.label} — {action.rationale}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
 
         {/* Guided Investigation Button & Shortcuts */}
@@ -476,16 +531,30 @@ export function EmailAnalyzer() {
   const abortRef = useRef<AbortController | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const loadFile = (file: File) => {
+    const extension = file.name.toLowerCase().split('.').pop();
+    if (!extension || !['eml', 'txt'].includes(extension)) {
+      setError('Please choose an .eml or .txt email file. Outlook .msg files must first be exported as .eml.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setError('This file is larger than 10 MB. Export a smaller message or remove large attachments before analysis.');
+      return;
+    }
+    setError(null);
     const reader = new FileReader();
     reader.onload = (ev) => {
       setRawText((ev.target?.result as string) ?? '');
       setFilename(file.name);
       setTab('paste');
     };
+    reader.onerror = () => setError('The file could not be read. Try exporting the message as a plain .eml file.');
     reader.readAsText(file);
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) loadFile(file);
   };
 
   const handleSelectSample = (sample: typeof SAMPLE_ATTACK_VECTORS[0]) => {
@@ -551,7 +620,7 @@ export function EmailAnalyzer() {
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            RFC 5322 MIME Ingestion, Cryptographic Authentication, MTA Relay Timeline, and Explanatory Scoring
+            Upload an email to learn whether it is safe, why it was flagged, and what action to take next.
           </p>
         </div>
 
@@ -579,7 +648,7 @@ export function EmailAnalyzer() {
           <div className="p-4 rounded-xl bg-[#080e21]/80 border border-cyan-500/20 backdrop-blur-md">
             <div className="text-[11px] font-mono font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Zap size={13} className="text-amber-400" />
-              <span>LOAD REAL ATTACK SAMPLES (.EML)</span>
+              <span>TRY A GUIDED DEMO EXAMPLE</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {SAMPLE_ATTACK_VECTORS.map((s) => (
@@ -637,26 +706,18 @@ export function EmailAnalyzer() {
                 onDrop={(e) => {
                   e.preventDefault();
                   const f = e.dataTransfer.files[0];
-                  if (f) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                      setRawText((ev.target?.result as string) ?? '');
-                      setFilename(f.name);
-                      setTab('paste');
-                    };
-                    reader.readAsText(f);
-                  }
+                  if (f) loadFile(f);
                 }}
                 className="p-12 text-center cursor-pointer flex flex-col items-center justify-center gap-3 hover:bg-cyan-950/20 transition-colors"
               >
                 <Upload size={36} className="text-cyan-400 animate-bounce" />
                 <div className="font-semibold text-sm text-slate-200">
-                  Drop .eml, .msg, or raw email file here
+                  Drop an .eml email file here, or click to browse
                 </div>
                 <div className="text-xs text-slate-500 font-mono">
-                  Supports RFC-5322 MIME messages up to 10MB
+                  Supports .eml and .txt files up to 10 MB. Files are analyzed as evidence and are never executed.
                 </div>
-                <input ref={fileRef} type="file" accept=".eml,.msg,.txt" className="hidden" onChange={handleFile} />
+                <input ref={fileRef} type="file" accept=".eml,.txt" className="hidden" onChange={handleFile} />
               </div>
             )}
           </div>
@@ -668,6 +729,13 @@ export function EmailAnalyzer() {
             </div>
           )}
 
+          {rawText.trim() && !error && (
+            <div className="p-3 rounded-lg bg-emerald-950/30 border border-emerald-500/25 text-emerald-300 text-xs flex items-center gap-2" role="status">
+              <CheckCircle size={14} />
+              <span><strong>{filename}</strong> is ready. Select “Analyze email” to begin.</span>
+            </div>
+          )}
+
           {/* Analyze Button */}
           <button
             onClick={runAnalysis}
@@ -675,7 +743,7 @@ export function EmailAnalyzer() {
             className="w-full btn-primary py-3.5 text-sm flex items-center justify-center gap-2 font-mono uppercase tracking-wider shadow-[0_0_25px_rgba(6,182,212,0.4)]"
           >
             <Search size={16} />
-            <span>RUN FULL FORENSIC INVESTIGATION</span>
+            <span>ANALYZE EMAIL</span>
           </button>
         </div>
       )}
