@@ -35,7 +35,7 @@ function useStableCallback<T extends (...args: unknown[]) => unknown>(fn: T): T 
 /** Replace NodeJS.Timeout with the correct DOM type */
 type TimerId = ReturnType<typeof setTimeout>;
 
-type VoiceProfileId = 'command' | 'calm' | 'synthetic';
+type VoiceProfileId = 'command';
 
 const VOICE_PROFILES: Array<{
   id: VoiceProfileId;
@@ -47,27 +47,18 @@ const VOICE_PROFILES: Array<{
 }> = [
   {
     id: 'command',
-    name: 'Command',
-    description: 'Deep, authoritative SOC welcome',
-    rate: 0.88,
-    pitch: 0.72,
-    preferredNames: ['Microsoft David', 'Google UK English Male', 'Daniel', 'Alex'],
-  },
-  {
-    id: 'calm',
-    name: 'Calm Intelligence',
-    description: 'Clear, composed forensic assistant',
-    rate: 0.92,
-    pitch: 1.02,
-    preferredNames: ['Microsoft Zira', 'Google UK English Female', 'Samantha', 'Karen'],
-  },
-  {
-    id: 'synthetic',
-    name: 'Neural System',
-    description: 'Measured cyber-system delivery',
-    rate: 0.78,
-    pitch: 0.86,
-    preferredNames: ['Microsoft Mark', 'Google US English', 'Moira', 'Tessa'],
+    name: 'Deep Command',
+    description: 'Low, powerful male SOC command voice',
+    rate: 0.8,
+    pitch: 0.55,
+    preferredNames: [
+      'Microsoft David',
+      'Microsoft Mark',
+      'Google UK English Male',
+      'Daniel',
+      'Alex',
+      'Fred',
+    ],
   },
 ];
 
@@ -514,9 +505,9 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
         <section className="intro-voice-panel" aria-labelledby="intro-voice-title">
           <div className="intro-voice-icon"><Volume2 size={25} /></div>
           <p className="intro-voice-eyebrow">SECURE AUDIO HANDSHAKE</p>
-          <h1 id="intro-voice-title">Choose your welcome voice</h1>
+          <h1 id="intro-voice-title">Deep Command Voice</h1>
           <p className="intro-voice-copy">
-            Preview a system voice, then enter the SentinelTrace cinematic experience.
+            Preview the low male command voice, then enter the SentinelTrace cinematic experience.
           </p>
 
           <div className="intro-voice-options" role="radiogroup" aria-label="Welcome voice">
