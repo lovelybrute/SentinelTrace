@@ -75,8 +75,8 @@ export default function App() {
         </Suspense>
       )}
 
-      {/* Main Application with Lazy Route Suspense */}
-      <Suspense fallback={<LoadingFallback />}>
+      {/* Do not render another animated page underneath the WebGL intro. */}
+      {!showIntro && <Suspense fallback={<LoadingFallback />}>
         <Routes>
           {/* Public Hero / Storytelling Landing Page */}
           <Route path="/" element={<Landing />} />
@@ -149,7 +149,7 @@ export default function App() {
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Suspense>
+      </Suspense>}
     </>
   );
 }
