@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -14,14 +14,45 @@ import {
 } from 'lucide-react';
 import { useSession } from '@/context/SessionContext';
 
-const ThreatGlobe = React.lazy(() => import('@/components/dashboard/ThreatGlobe'));
-
 const DEMO_ROLES = [
   { role: 'SOC_ANALYST' as const, label: 'SOC Analyst', sub: 'Tier-2 Email Threat Analysis', color: '#22d3ee' },
   { role: 'INVESTIGATOR' as const, label: 'Investigator', sub: 'Cybercrime Investigation Cell', color: '#a78bfa' },
   { role: 'ADMIN' as const, label: 'Administrator', sub: 'CERT-In National Response', color: '#f97316' },
   { role: 'AUDITOR' as const, label: 'Auditor', sub: 'Compliance & Evidence Review', color: '#22c55e' },
 ];
+
+function LightweightThreatGlobe() {
+  const globeRef = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    const element = globeRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(([entry]) => setPaused(!entry.isIntersecting), { threshold: 0.08 });
+    const onVisibility = () => setPaused(document.hidden);
+    observer.observe(element);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
+  return (
+    <div ref={globeRef} className={`login-lite-globe${paused ? ' paused' : ''}`} aria-label="Animated global threat relay map">
+      <div className="login-lite-earth"><div className="login-lite-earth-surface" /></div>
+      <svg className="login-lite-routes" viewBox="0 0 760 480" aria-hidden="true">
+        <path className="trusted" d="M190 258 Q358 94 565 232" />
+        <path className="threat" d="M235 358 Q390 148 603 192" />
+        <path className="trusted delay-one" d="M548 360 Q520 188 330 185" />
+        <path className="threat delay-two" d="M380 170 Q485 100 590 245" />
+        <g className="relay-node trusted-node"><circle cx="190" cy="258" r="7" /><circle cx="565" cy="232" r="7" /><circle cx="548" cy="360" r="7" /></g>
+        <g className="relay-node threat-node"><circle cx="235" cy="358" r="7" /><circle cx="603" cy="192" r="7" /><circle cx="380" cy="170" r="7" /></g>
+      </svg>
+      <div className="login-lite-atmosphere" aria-hidden="true" />
+    </div>
+  );
+}
 
 export function Login() {
   const { signIn, signInDemo } = useSession();
@@ -72,9 +103,7 @@ export function Login() {
           </div>
 
           <div className="login-globe-frame">
-            <Suspense fallback={<div className="login-globe-loading">INITIALIZING EARTH INTELLIGENCE…</div>}>
-              <ThreatGlobe height={500} />
-            </Suspense>
+            <LightweightThreatGlobe />
             <div className="login-globe-scan" aria-hidden="true" />
             <div className="login-intel-tag login-intel-tag-threat">
               <Radio size={12} /> <span><b>THREAT DETECTED</b>AS60729 · HIGH RISK</span>
