@@ -1,116 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Shield, Eye, EyeOff, Lock, Mail, ChevronRight, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Activity,
+  AlertTriangle,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  MapPin,
+  Radio,
+  Server,
+  Shield,
+} from 'lucide-react';
+import { InteractiveGlobe3D } from '@/components/3d/InteractiveGlobe3D';
 import { useSession } from '@/context/SessionContext';
 
-/* ------------------------------------------------------------------ */
- /* Animated network canvas background                                  */
-/* ------------------------------------------------------------------ */
-
-/* ------------------------------------------------------------------ */
- /* Animated 3D-inspired network canvas background                      */
-/* ------------------------------------------------------------------ */
-
-function NetworkCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
-
-    let animId = 0;
-    let W = 0, H = 0;
-
-    interface Particle {
-      x: number; y: number;
-      vx: number; vy: number;
-      hue: number;
-    }
-
-    const N = 60;
-    const particles: Particle[] = [];
-
-    const resize = () => {
-      W = canvas.width = canvas.offsetWidth;
-      H = canvas.height = canvas.offsetHeight;
-      particles.length = 0;
-      for (let i = 0; i < N; i++) {
-        particles.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 0.6,
-          vy: (Math.random() - 0.5) * 0.6,
-          hue: Math.random() > 0.5 ? 220 : 0, // Cyan or red palette
-        });
-      }
-    };
-
-    const draw = () => {
-      ctx.clearRect(0, 0, W, H);
-
-      // Update
-      for (const p of particles) {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0 || p.x > W) p.vx *= -1;
-        if (p.y < 0 || p.y > H) p.vy *= -1;
-      }
-
-      // Draw edges (crypotkonyan cyan network)
-      ctx.strokeStyle = 'rgba(34,211,238,0.08)';
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < N; i++) {
-        for (let j = i + 1; j < N; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 130) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw nodes with color hue
-      for (const p of particles) {
-        ctx.beginPath();
-        const color = p.hue === 220 ? 'rgba(34,211,238,0.35)' : 'rgba(239,68,68,0.35)';
-        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-      }
-
-      animId = requestAnimationFrame(draw);
-    };
-
-    resize();
-    draw();
-    window.addEventListener('resize', resize);
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-      }}
-    />
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Login page                                                          */
-/* ------------------------------------------------------------------ */
+const DEMO_ROLES = [
+  { role: 'SOC_ANALYST' as const, label: 'SOC Analyst', sub: 'Tier-2 Email Threat Analysis', color: '#22d3ee' },
+  { role: 'INVESTIGATOR' as const, label: 'Investigator', sub: 'Cybercrime Investigation Cell', color: '#a78bfa' },
+  { role: 'ADMIN' as const, label: 'Administrator', sub: 'CERT-In National Response', color: '#f97316' },
+  { role: 'AUDITOR' as const, label: 'Auditor', sub: 'Compliance & Evidence Review', color: '#22c55e' },
+];
 
 export function Login() {
   const { signIn, signInDemo } = useSession();
@@ -121,290 +31,124 @@ export function Login() {
   const [error, setError] = useState('');
   const [demoDropdown, setDemoDropdown] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) { setError('Enter your credentials.'); return; }
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!email || !password) {
+      setError('Enter your credentials.');
+      return;
+    }
     setLoading(true);
     setError('');
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800));
     signIn(email, password);
     setLoading(false);
   };
 
   return (
-    <div
-      className="login-shell relative flex items-center justify-center min-h-screen"
-    >
-      <NetworkCanvas />
-
+    <main className="login-command-shell">
       <div className="login-cyber-grid" aria-hidden="true" />
-      <div className="login-aurora login-aurora-cyan" aria-hidden="true" />
-      <div className="login-aurora login-aurora-red" aria-hidden="true" />
+      <div className="login-command-glow login-command-glow-cyan" aria-hidden="true" />
+      <div className="login-command-glow login-command-glow-red" aria-hidden="true" />
 
-      {/* Login card */}
-      <div
-        className="login-glass-card relative animate-fade-in"
-        style={{
-          width: '100%',
-          maxWidth: 480,
-        }}
-      >
-        {/* Brand */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <div
-              className="login-brand-shield flex items-center justify-center rounded-2xl"
-              style={{
-                width: 56, height: 56,
-              }}
-            >
-              <Shield size={28} color="#22d3ee" />
+      <header className="login-command-header">
+        <div className="login-command-brand">
+          <span><Shield size={17} /></span>
+          <div><strong>SENTINELTRACE</strong><small>AI FORENSIC INTELLIGENCE</small></div>
+        </div>
+        <div className="login-command-health">
+          <span><i /> AI ENGINE ONLINE</span>
+          <span><i /> FORENSIC DB SECURE</span>
+          <b>SIH 26106</b>
+        </div>
+      </header>
+
+      <div className="login-command-layout">
+        <section className="login-intel-stage" aria-label="Live global threat intelligence">
+          <div className="login-intel-heading">
+            <span>GLOBAL RELAY INTELLIGENCE</span>
+            <h1>See the infrastructure<br />behind the message.</h1>
+            <p>Live visualization of observed relay nodes, suspicious infrastructure and trusted mail gateways.</p>
+          </div>
+
+          <div className="login-globe-frame">
+            <InteractiveGlobe3D />
+            <div className="login-globe-scan" aria-hidden="true" />
+            <div className="login-intel-tag login-intel-tag-threat">
+              <Radio size={12} /> <span><b>THREAT DETECTED</b>AS60729 · HIGH RISK</span>
+            </div>
+            <div className="login-intel-tag login-intel-tag-relay">
+              <Server size={12} /> <span><b>RELAY VERIFIED</b>RFC TRACE ACTIVE</span>
+            </div>
+            <div className="login-intel-tag login-intel-tag-origin">
+              <MapPin size={12} /> <span><b>ORIGIN SIGNAL</b>INDIA · 95% CONF.</span>
             </div>
           </div>
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 900,
-              letterSpacing: '0.12em',
-              color: '#22d3ee',
-            }}
-          >
-            SENTINEL<span style={{ color: '#e2e8f0' }}>TRACE</span>
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: 'var(--color-text-muted)',
-              letterSpacing: '0.06em',
-              marginTop: 4,
-              textTransform: 'uppercase',
-            }}
-          >
-            AI-Powered Email Threat Detection & Forensic Intelligence
-          </div>
 
-          {/* SIH badge */}
-          <div
-            className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full"
-            style={{
-              background: 'rgba(99,102,241,0.12)',
-              border: '1px solid rgba(99,102,241,0.25)',
-              fontSize: 10,
-              fontWeight: 600,
-              color: '#818cf8',
-              letterSpacing: '0.04em',
-            }}
-          >
-            <span>SIH 2026</span>
-            <span style={{ color: 'rgba(99,102,241,0.5)' }}>•</span>
-            <span>Problem #26106</span>
-          </div>
-        </div>
-
-        {/* Permanent team signature — remains visible after the cinematic intro */}
-        <style>{`
-          /* TEAM BRUTE blood drip animation keyframes */
-          @keyframes blood-drip-1 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(30px) rotate(5deg); opacity: 1; } }
-          @keyframes blood-drip-2 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(25px) rotate(-3deg); opacity: 1; } }
-          @keyframes blood-drip-3 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(35px) rotate(2deg); opacity: 1; } }
-          @keyframes blood-drip-4 { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 100% { transform: translateY(20px) rotate(4deg); opacity: 1; } }
-
-          /* Reduced-motion: static version */
-          .static-brute .brute-blood-text,
-          .static-brute .static-drip { opacity: 1; }
-
-          /* Normal-motion: animated version */
-          @media (prefers-reduced-motion: no-preference) {
-            .brute-blood-lockup.animated-brute .brute-blood-text {
-              animation: blood-drip-1 0.8s ease-out forwards,
-                        blood-drip-2 0.8s ease-out 0.1s forwards,
-                        blood-drip-3 0.8s ease-out 0.2s forwards,
-                        blood-drip-4 0.8s ease-out 0.3s forwards;
-            }
-            .brute-blood-lockup.animated-brute .blood-drip-one { animation-delay: 0.1s; }
-            .brute-blood-lockup.animated-brute .blood-drip-two { animation-delay: 0.2s; }
-            .brute-blood-lockup.animated-brute .blood-drip-three { animation-delay: 0.2s; }
-            .brute-blood-lockup.animated-brute .blood-drip-four { animation-delay: 0.3s; }
-            .brute-blood-lockup.animated-brute .static-drip { display: none; }
-            .brute-blood-lockup.static-brute .brute-blood-text { animation: none; }
-            .brute-blood-lockup.static-brute .static-drip { display: block; }
-          }
-        `}</style>
-
-        {/* Permanent team signature — remains visible after the cinematic intro */}
-        <section className="team-signature-glass" aria-label="Team Brute">
-          <div className="team-signature-kicker">BUILT FOR SIH 2026 BY</div>
-          <div className="brute-blood-lockup static-brute" aria-label="TEAM BRUTE">
-            <span className="brute-blood-text" aria-hidden="true">TEAM BRUTE</span>
-            <span className="blood-drip static-drip" aria-hidden="true" />
-            <span className="blood-drip static-drip" aria-hidden="true" />
-            <span className="blood-drip static-drip" aria-hidden="true" />
-            <span className="blood-drip static-drip" aria-hidden="true" />
+          <div className="login-intel-status">
+            <div><Activity size={14} /><span>ACTIVE NODES<strong>24</strong></span></div>
+            <div><Radio size={14} /><span>RELAY CHAINS<strong>08</strong></span></div>
+            <div><AlertTriangle size={14} /><span>HIGH-RISK SIGNALS<strong>03</strong></span></div>
           </div>
         </section>
 
-        {/* Error */}
-        {error && (
-          <div
-            className="flex items-center gap-2 rounded-lg px-3 py-2 mb-4"
-            style={{
-              background: 'rgba(239,68,68,0.1)',
-              border: '1px solid rgba(239,68,68,0.25)',
-              color: '#ef4444',
-              fontSize: 13,
-            }}
-          >
-            <AlertTriangle size={14} />
-            {error}
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="label mb-1.5 block">Analyst Email</label>
-            <div className="relative">
-              <Mail
-                size={14}
-                style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}
-              />
-              <input
-                className="st-input glass-input"
-                style={{ paddingLeft: 36 }}
-                type="email"
-                placeholder="analyst@cert-in.gov.in"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                autoComplete="email"
-              />
-            </div>
+        <aside className="login-access-card animate-fade-in" aria-labelledby="secure-access-title">
+          <div className="login-access-brand">
+            <span><Shield size={24} /></span>
+            <p>AUTHORIZED PERSONNEL</p>
+            <h2 id="secure-access-title">Secure SOC Access</h2>
+            <small>Authenticate to enter the forensic operations workspace.</small>
           </div>
 
-          <div>
-            <label className="label mb-1.5 block">Password</label>
-            <div className="relative">
-              <Lock
-                size={14}
-                style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }}
-              />
-              <input
-                className="st-input glass-input"
-                style={{ paddingLeft: 36, paddingRight: 40 }}
-                type={showPass ? 'text' : 'password'}
-                placeholder="••••••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass(s => !s)}
-                style={{
-                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--color-text-muted)',
-                }}
-              >
-                {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-            </div>
+          <div className="login-team-signature">
+            <span>BUILT FOR SIH 2026 BY</span>
+            <strong>TEAM BRUTE</strong>
           </div>
 
-          <button
-            type="submit"
-            className="btn-primary login-primary-action flex items-center justify-center gap-2"
-            style={{ marginTop: 4, height: 44 }}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="animate-spin" style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(3,7,18,0.3)', borderTop: '2px solid #030712', borderRadius: '50%' }} />
-                Authenticating...
-              </>
-            ) : (
-              <>
-                SIGN IN
-                <ChevronRight size={14} />
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-5">
-          <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
-          <span style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>OR</span>
-          <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
-        </div>
-
-        {/* Demo Mode */}
-        <div className="relative">
-          <button
-            onClick={() => setDemoDropdown(d => !d)}
-            className="demo-glass-action w-full flex items-center justify-center gap-2"
-            style={{
-              padding: '11px 20px',
-              borderRadius: 8,
-              color: '#f59e0b',
-              fontWeight: 700,
-              fontSize: 13,
-              cursor: 'pointer',
-              letterSpacing: '0.03em',
-              transition: 'all 0.2s',
-            }}
-          >
-            ⚡ DEMO ANALYST MODE
-            <ChevronRight size={13} style={{ transform: demoDropdown ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
-          </button>
-
-          {demoDropdown && (
-            <div
-              className="demo-glass-menu absolute w-full mt-2 rounded-lg overflow-hidden animate-fade-in"
-              style={{
-                zIndex: 10,
-              }}
-            >
-              {[
-                { role: 'SOC_ANALYST' as const, label: 'SOC Analyst', sub: 'Tier-2 Email Threat Analysis', color: '#22d3ee' },
-                { role: 'INVESTIGATOR' as const, label: 'Investigator', sub: 'Cybercrime Investigation Cell', color: '#a78bfa' },
-                { role: 'ADMIN' as const, label: 'Administrator', sub: 'CERT-In National Response', color: '#f97316' },
-                { role: 'AUDITOR' as const, label: 'Auditor', sub: 'Compliance & Evidence Review', color: '#22c55e' },
-              ].map(opt => (
-                <button
-                  key={opt.role}
-                  onClick={() => signInDemo(opt.role)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all-fast"
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    borderBottom: '1px solid var(--color-border)',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(34,211,238,0.05)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >
-                  <div
-                    style={{
-                      width: 8, height: 8, borderRadius: '50%',
-                      background: opt.color, boxShadow: `0 0 6px ${opt.color}`,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>{opt.label}</div>
-                    <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{opt.sub}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
+          {error && (
+            <div className="login-command-error"><AlertTriangle size={14} />{error}</div>
           )}
-        </div>
 
+          <form onSubmit={handleSubmit} className="login-command-form">
+            <label>
+              <span>ANALYST EMAIL</span>
+              <div><Mail size={14} /><input type="email" placeholder="analyst@cert-in.gov.in" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" /></div>
+            </label>
+            <label>
+              <span>PASSWORD</span>
+              <div>
+                <Lock size={14} />
+                <input type={showPass ? 'text' : 'password'} placeholder="••••••••••••" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" />
+                <button type="button" aria-label={showPass ? 'Hide password' : 'Show password'} onClick={() => setShowPass((shown) => !shown)}>{showPass ? <EyeOff size={14} /> : <Eye size={14} />}</button>
+              </div>
+            </label>
+            <button type="submit" className="login-command-submit" disabled={loading}>
+              {loading ? <><i /> AUTHENTICATING…</> : <>SIGN IN <ChevronRight size={14} /></>}
+            </button>
+          </form>
 
-        <div className="login-version-line text-center mt-5">
-          SentinelTrace v1.0 · SIH 26106 · CERT-In Aligned
-        </div>
+          <div className="login-command-divider"><span>OR</span></div>
+
+          <div className="login-demo-control">
+            <button type="button" className="login-demo-trigger" onClick={() => setDemoDropdown((open) => !open)} aria-expanded={demoDropdown}>
+              <span>⚡ DEMO ANALYST MODE</span><ChevronRight size={13} className={demoDropdown ? 'open' : ''} />
+            </button>
+            {demoDropdown && (
+              <div className="login-demo-menu animate-fade-in">
+                {DEMO_ROLES.map((option) => (
+                  <button type="button" key={option.role} onClick={() => signInDemo(option.role)}>
+                    <i style={{ background: option.color, boxShadow: `0 0 7px ${option.color}` }} />
+                    <span><strong>{option.label}</strong><small>{option.sub}</small></span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="login-access-footer">
+            <span><i /> TLS SECURE</span><span>v2.0.0</span><span>CERT-In ALIGNED</span>
+          </div>
+        </aside>
       </div>
-    </div>
+    </main>
   );
 }
