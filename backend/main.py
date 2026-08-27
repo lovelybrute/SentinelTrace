@@ -22,6 +22,7 @@ from report_generator import ReportGenerator
 from stix_exporter import STIXExporter
 from validated_model import read_model_metrics
 from auth import authenticate, configured_users, decode_token, issue_token
+from threat_intel import lookup as lookup_threat_intel
 
 
 # ============================================================
@@ -136,6 +137,10 @@ def health_check(db: Session = Depends(get_db)):
         "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_BYTES / (1024 * 1024),
         "real_login": "configured" if configured_users() else "disabled",
         "production_secret_configured": settings.JWT_SECRET != "sentineltrace-dev-secret-key-change-in-production-2026",
+        "threat_intel": {
+            "virustotal": "configured" if settings.VIRUSTOTAL_API_KEY else "not_configured",
+            "abuseipdb": "configured" if settings.ABUSEIPDB_API_KEY else "not_configured",
+        },
     }
 
 
@@ -168,6 +173,15 @@ def current_user(request: Request):
     if not claims:
         raise HTTPException(status_code=401, detail="Missing, invalid, or expired access token.")
     return _session_payload(claims)
+
+
+@app.get("/intel/lookup")
+def threat_intel_lookup(indicator: str = Query(..., min_length=3, max_length=253)):
+    """Look up one validated IP/domain using configured provider accounts."""
+    try:
+        return lookup_threat_intel(indicator)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/model/metrics")
