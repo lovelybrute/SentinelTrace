@@ -3,9 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import {
   Activity,
   ArrowRight,
+  BrainCircuit,
+  CheckCircle2,
+  Database,
   FileSearch,
+  FileArchive,
+  Link2,
+  MailCheck,
+  MapPin,
   Menu,
   Network,
+  Route,
   Shield,
   X,
   Zap,
@@ -28,6 +36,45 @@ const STATS = [
   { figure: '106K+', label: 'Evidence records', foot: 'Validated training corpus' },
   { figure: '98.74%', label: 'Held-out accuracy', foot: 'Transparent ML evaluation' },
   { figure: '15+', label: 'Forensic modules', foot: 'One investigation workspace' },
+];
+
+const CAPABILITIES = [
+  {
+    icon: MailCheck,
+    code: 'AUTH-01',
+    title: 'Sender Authentication',
+    copy: 'Evaluate SPF and DMARC alignment, and verify DKIM when the required raw evidence and DNS records are available.',
+  },
+  {
+    icon: Route,
+    code: 'RELAY-02',
+    title: 'Relay Reconstruction',
+    copy: 'Convert Received headers into an ordered MTA timeline and isolate the earliest reliable external infrastructure.',
+  },
+  {
+    icon: MapPin,
+    code: 'GEO-03',
+    title: 'Origin Intelligence',
+    copy: 'Enrich observed relay IPs with ASN, provider and geolocation clues while clearly communicating attribution limits.',
+  },
+  {
+    icon: BrainCircuit,
+    code: 'ML-04',
+    title: 'Explainable ML Triage',
+    copy: 'Combine validated phishing probability with transparent forensic signals instead of presenting a black-box verdict.',
+  },
+  {
+    icon: Link2,
+    code: 'GRAPH-05',
+    title: 'Campaign Correlation',
+    copy: 'Connect messages through shared domains, IP ranges, URLs and infrastructure to reveal coordinated activity.',
+  },
+  {
+    icon: FileArchive,
+    code: 'CASE-06',
+    title: 'Evidence Operations',
+    copy: 'Create cases, preserve analysis context, generate reports and export investigation-ready IOC and STIX evidence.',
+  },
 ];
 
 export function Landing() {
@@ -161,7 +208,7 @@ export function Landing() {
         </div>
       </section>
 
-      <section id="capabilities" className="cyber-hero-foot" aria-label="Platform evidence">
+      <section className="cyber-hero-foot" aria-label="Platform evidence">
         <article className="cyber-note-card">
           <div className="cyber-note-icon"><Network size={18} /></div>
           <div>
@@ -170,7 +217,7 @@ export function Landing() {
           </div>
         </article>
 
-        <div id="validation" className="cyber-stat-row">
+        <div className="cyber-stat-row">
           {STATS.map((stat, index) => (
             <article key={stat.label} className="cyber-stat-card">
               <div className="cyber-stat-topline">
@@ -189,6 +236,82 @@ export function Landing() {
         <span>SIH 26106</span>
         <span>RFC FORENSICS · VALIDATED ML</span>
       </div>
+
+      <section id="capabilities" className="cyber-detail-section" aria-labelledby="capabilities-title">
+        <div className="cyber-section-heading">
+          <span>CAPABILITY MATRIX · 06 MODULES</span>
+          <h2 id="capabilities-title">One investigation workspace.<br />Every signal connected.</h2>
+          <p>
+            SentinelTrace moves beyond a simple phishing label by connecting protocol evidence,
+            infrastructure intelligence, machine learning and analyst operations.
+          </p>
+        </div>
+
+        <div className="cyber-capability-grid">
+          {CAPABILITIES.map(({ icon: Icon, code, title, copy }) => (
+            <article key={code} className="cyber-capability-card">
+              <div className="cyber-capability-icon"><Icon size={20} /></div>
+              <span>{code}</span>
+              <h3>{title}</h3>
+              <p>{copy}</p>
+              <div className="cyber-card-line" />
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="validation" className="cyber-detail-section cyber-validation-section" aria-labelledby="validation-title">
+        <div className="cyber-section-heading">
+          <span>VALIDATION EVIDENCE · HELD-OUT TEST SET</span>
+          <h2 id="validation-title">Measured performance.<br />Clearly stated limitations.</h2>
+          <p>
+            Model claims are tied to a reproducible artifact and published evaluation evidence—never presented as universal accuracy.
+          </p>
+        </div>
+
+        <div className="cyber-validation-layout">
+          <article className="cyber-validation-main">
+            <div className="cyber-validation-title">
+              <Database size={20} />
+              <div>
+                <span>DATASET EVIDENCE</span>
+                <h3>MeAJOR v2.0 cleaned/preprocessed corpus</h3>
+              </div>
+              <strong><CheckCircle2 size={15} /> VALIDATED HOLDOUT</strong>
+            </div>
+            <div className="cyber-metric-grid">
+              <div><span>Accuracy</span><strong>98.74%</strong></div>
+              <div><span>Precision</span><strong>98.71%</strong></div>
+              <div><span>Recall</span><strong>98.74%</strong></div>
+              <div><span>Macro F1</span><strong>98.73%</strong></div>
+            </div>
+            <div className="cyber-validation-meta">
+              <span><b>106,159</b> total records</span>
+              <span><b>84,927 / 21,232</b> train / test</span>
+              <span><b>Logistic regression</b> selected model</span>
+            </div>
+          </article>
+
+          <aside className="cyber-limits-card">
+            <Shield size={22} />
+            <span>HONEST AI SCOPE</span>
+            <h3>Evidence, not certainty.</h3>
+            <p>
+              Holdout results apply to the supplied corpus. Independent cross-dataset and recent real-world validation remain required.
+              Final containment and attribution decisions stay with the human analyst.
+            </p>
+            <button type="button" onClick={() => navigate('/model-performance')}>
+              Inspect model evidence <ArrowRight size={14} />
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <footer className="cyber-landing-footer">
+        <span>SENTINELTRACE · TEAM BRUTE</span>
+        <button type="button" onClick={() => navigate('/login')}>Enter SOC <ArrowRight size={13} /></button>
+        <span>SIH 26106 · FORENSIC INTELLIGENCE</span>
+      </footer>
     </main>
   );
 }
