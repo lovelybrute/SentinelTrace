@@ -8,6 +8,8 @@ import { AnalysisProvider } from './context/AnalysisContext';
 import { AlertProvider } from './context/AlertContext';
 import './styles.css';
 
+document.documentElement.dataset.visualMode = localStorage.getItem('sentineltrace_visual_mode') || 'balanced';
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
