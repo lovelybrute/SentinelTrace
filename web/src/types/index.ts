@@ -115,6 +115,15 @@ export interface ThreatScore {
   components: ScoreComponent[];
 }
 
+export interface ModelEvidence {
+  /** Held-out binary model probability used by backend hybrid scoring. */
+  validatedPhishingProbability: number | null;
+  /** Prototype classifier output used only to describe the likely attack type. */
+  attackSubtype: string | null;
+  attackSubtypeConfidence: number | null;
+  probabilitySource: string | null;
+}
+
 /* ------------------------------------------------------------------ */
 /* Email headers & authentication                                      */
 /* ------------------------------------------------------------------ */
@@ -371,6 +380,7 @@ export interface EmailAnalysis {
   bodyPreview: string;
   score: ThreatScore;
   assessment: AiAssessment;
+  modelEvidence: ModelEvidence;
   authentication: AuthenticationSummary;
   relayChain: RelayHop[];
   originAssessment: OriginAssessment;
