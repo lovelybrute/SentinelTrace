@@ -24,7 +24,7 @@ Combining **RFC-compliant protocol verification**, **cryptographic chain-of-cust
 | **Brand Protection** | Damerau-Levenshtein distance, character substitutions (`0` for `o`, `rn` for `m`), and IDN homoglyph punycode detection. |
 | **BEC Detection** | 7-category classifier (Executive Impersonation, Invoice Fraud, Payment Diversion, Payroll, Wire Transfers, Gift Cards, Credential Harvesting). |
 | **Safe Static Analysis** | Magic-byte MIME checks, executable double-extension detection (`.pdf.exe`), SSRF-protected URL analysis, and SHA-256/SHA-512 evidence hashing. |
-| **Explainable risk engine** | Transparent rule weights plus a clearly labeled Gradient Boosting prototype trained on a small synthetic attack-archetype baseline. No external accuracy claim is made yet. |
+| **Explainable risk engine** | Integrity-checked validated binary phishing probability combined with forensic rules, infrastructure and campaign evidence. A clearly labelled Gradient Boosting prototype is used only for descriptive attack-subtype estimation. |
 | **Threat Sharing** | Automated MITRE ATT&CK matrix mapping (T1566, T1598) and standardized OASIS STIX 2.1 JSON bundle exporter. |
 | **Investigation UX** | 3D Hero Network, 3D Entity Graph, AI Investigation Copilot Drawer, and Universal Command Palette (`Ctrl + K`). |
 
@@ -83,7 +83,7 @@ Combining **RFC-compliant protocol verification**, **cryptographic chain-of-cust
 ## 🚀 Quick-Start Guide
 
 ### 1. Prerequisites
-- **Python 3.10+**
+- **Python 3.11 or 3.12 recommended** (the pinned Pydantic release is not compatible with this project's Python 3.13 setup)
 - **Node.js 18+** & **npm**
 
 ### 2. Start Backend API Server
@@ -91,10 +91,11 @@ Combining **RFC-compliant protocol verification**, **cryptographic chain-of-cust
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Start FastAPI backend
-python backend/main.py
-# API active on http://localhost:8000
-# Swagger UI Docs: http://localhost:8000/docs
+# Start FastAPI backend from its module directory
+cd backend
+python -m uvicorn main:app --reload
+# API active on http://127.0.0.1:8000
+# Swagger UI Docs: http://127.0.0.1:8000/docs
 ```
 
 ### 3. Start React 18 SOC Dashboard
@@ -146,6 +147,14 @@ does not imply broader validation than the source labels support.
 
 Open **Model Performance** in the dashboard to see held-out precision, recall, macro F1, class support, and validation status. The backend activates the saved classifier only after minimum held-out support is met; smaller experiments remain labeled as prototypes. See `ml/README.md`.
 
+The repository model was trained on 106,159 deduplicated records from the uploaded MeAJOR v2.0 release and achieved 98.74% accuracy / 98.73% macro F1 on a 21,232-record stratified holdout. These results apply only to that corpus. Its TREC-derived positive class includes broad unsolicited/malicious email, so SentinelTrace displays it as phishing-proxy evidence and does not claim phishing-only or real-world production validation.
+
+### Data provenance in the interface
+
+- Uploaded-email parsing, hashing, model inference, scoring, IOC extraction and reporting are functional application logic.
+- DNS and geolocation enrichment can degrade when external services are unavailable.
+- Analytics, selected campaign views, dashboard fallbacks and demo identities are visibly demonstration-backed; they are not live institutional telemetry.
+
 ---
 
 ## 📂 Repository Layout
@@ -173,7 +182,7 @@ SIH26106_SentinelTrace/
 │   ├── mitre_mapper.py           # MITRE ATT&CK Matrix Mapper
 │   ├── stix_exporter.py          # OASIS STIX 2.1 JSON Bundle Generator
 │   ├── report_generator.py       # HTML, JSON & PDF Forensic Report Builder
-│   └── tests/                    # 19 Pytest & E2E Test Suite (100% Passing)
+│   └── tests/                    # Backend unit, API and scoring regression tests
 │
 ├── web/                          # React 18 + TypeScript + Three.js + Tailwind SOC
 │   └── src/
@@ -193,7 +202,7 @@ SIH26106_SentinelTrace/
 │       │   └── ForensicReports.tsx # Exportable Investigation Reports
 │       └── services/             # Typed API Client & Wire Schema Layer
 │
-├── samples/                      # 9 Real-World Forensic Sample Attack Vectors (.eml)
+├── samples/                      # Forensic demonstration attack vectors (.eml)
 ├── SIH_REQUIREMENT_MAPPING.md    # Judge-Facing Requirement Traceability Matrix
 ├── SIH_SUBMISSION.md             # Complete Hackathon Submission Document
 └── requirements.txt              # Production Python Dependencies
