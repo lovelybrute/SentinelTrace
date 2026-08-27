@@ -550,8 +550,72 @@ body {
 
 .login-globe-frame { position: relative; z-index: 2; min-height: 500px; margin-top: -22px; overflow: hidden; }
 .login-globe-frame > div:first-child { position: absolute; inset: 0; height: 100% !important; }
-.login-globe-frame canvas { filter: drop-shadow(0 0 34px rgba(34, 211, 238, 0.08)); }
-.login-globe-loading { display: grid; height: 100%; place-items: center; color: #527086; font: 8px var(--font-mono); letter-spacing: .14em; }
+.login-lite-globe { position: absolute; inset: 0; overflow: hidden; }
+.login-lite-earth {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(590px, 70%);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid rgba(103,232,249,.24);
+  border-radius: 50%;
+  background: #020a14;
+  transform: translate(-50%,-46%);
+  box-shadow: 0 0 28px rgba(34,211,238,.15),0 0 80px rgba(8,145,178,.09),inset -42px -8px 70px rgba(0,0,0,.72);
+}
+.login-lite-earth::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 34% 28%, transparent 0 36%, rgba(1,6,15,.18) 60%, rgba(0,2,8,.84) 100%),
+    linear-gradient(104deg, rgba(103,232,249,.07), transparent 34%);
+  box-shadow: inset 18px 0 40px rgba(34,211,238,.05);
+}
+.login-lite-earth-surface {
+  position: absolute;
+  inset: 0;
+  opacity: .9;
+  border-radius: inherit;
+  background-image: url('https://unpkg.com/three-globe/example/img/earth-night.jpg');
+  background-repeat: repeat-x;
+  background-position: 0 50%;
+  background-size: 200% 100%;
+  animation: loginEarthDrift 56s linear infinite;
+  filter: saturate(.72) brightness(.68) contrast(1.18) hue-rotate(155deg);
+}
+.login-lite-atmosphere {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(606px, 72%);
+  aspect-ratio: 1;
+  pointer-events: none;
+  border: 1px solid rgba(103,232,249,.28);
+  border-radius: 50%;
+  transform: translate(-50%,-46%);
+  box-shadow: 0 0 16px rgba(34,211,238,.26),inset 0 0 22px rgba(34,211,238,.12);
+}
+.login-lite-routes { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.login-lite-routes path { fill: none; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 9 12; animation: loginRouteFlow 5.5s linear infinite; filter: drop-shadow(0 0 4px currentColor); }
+.login-lite-routes path.trusted { color: #22d3ee; stroke: #22d3ee; }
+.login-lite-routes path.threat { color: #ef4444; stroke: #ef4444; }
+.login-lite-routes path.delay-one { animation-delay: -1.8s; }
+.login-lite-routes path.delay-two { animation-delay: -3.2s; }
+.login-lite-routes .relay-node circle { stroke-width: 2; }
+.login-lite-routes .trusted-node circle { fill: #22d3ee; stroke: #a5f3fc; filter: drop-shadow(0 0 7px #22d3ee); }
+.login-lite-routes .threat-node circle { fill: #ef4444; stroke: #fda4af; filter: drop-shadow(0 0 7px #ef4444); }
+.login-lite-globe.paused .login-lite-earth-surface,
+.login-lite-globe.paused .login-lite-routes path,
+.login-command-shell:focus-within .login-lite-earth-surface,
+.login-command-shell:focus-within .login-lite-routes path { animation-play-state: paused; }
+
+@keyframes loginEarthDrift { to { background-position: 100% 50%; } }
+@keyframes loginRouteFlow { to { stroke-dashoffset: -84; } }
 .login-globe-scan { position: absolute; top: 12%; left: 50%; width: min(430px, 62%); aspect-ratio: 1; pointer-events: none; border: 1px solid rgba(103, 232, 249, 0.09); border-radius: 50%; transform: translateX(-50%); box-shadow: 0 0 80px rgba(34, 211, 238, 0.05), inset 0 0 60px rgba(34, 211, 238, 0.03); }
 
 .login-intel-tag { position: absolute; display: flex; min-width: 142px; padding: 9px 10px; align-items: center; gap: 8px; color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 9px; background: rgba(2, 12, 25, 0.86); box-shadow: 0 12px 30px rgba(0,0,0,.34); }
@@ -1714,6 +1778,12 @@ body {
   .login-intel-stage { min-height: 520px; padding: 22px 16px 16px; border-radius: 20px; }
   .login-intel-heading h1 { font-size: 2.25rem; }
   .login-globe-frame { min-height: 320px; margin-top: -4px; }
+  .login-lite-earth { width: 86%; }
+  .login-lite-atmosphere { width: 89%; }
+  .login-lite-earth-surface,
+  .login-lite-routes path { animation: none; }
+  .login-lite-routes .delay-one,
+  .login-lite-routes .delay-two { display: none; }
   .login-intel-tag { min-width: 118px; padding: 7px; }
   .login-intel-tag-relay { top: 42%; }
   .login-intel-status { grid-template-columns: 1fr; }
