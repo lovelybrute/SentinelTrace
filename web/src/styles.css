@@ -1114,15 +1114,6 @@ body {
 .cyber-hero-media { z-index: -2; }
 .cyber-hero-media > div:first-child { width: 100%; height: 100%; }
 
-.cyber-lite-network { position: absolute; inset: 0; background: radial-gradient(circle at 50% 48%, rgba(8,145,178,.12),transparent 38%); }
-.cyber-lite-network svg { width: 100%; height: 100%; opacity: .54; }
-.cyber-lite-lines path { fill: none; stroke: rgba(34,211,238,.24); stroke-width: 1.2; stroke-dasharray: 7 11; animation: cyberLiteSignal 16s linear infinite; }
-.cyber-lite-nodes circle { transform-box: fill-box; transform-origin: center; animation: cyberLitePulse 3.8s ease-in-out infinite alternate; }
-.cyber-lite-nodes .safe { fill: #0891b2; filter: drop-shadow(0 0 7px rgba(34,211,238,.55)); }
-.cyber-lite-nodes .threat { fill: #991b1b; filter: drop-shadow(0 0 7px rgba(239,68,68,.45)); animation-delay: -1.7s; }
-@keyframes cyberLiteSignal { to { stroke-dashoffset: -144; } }
-@keyframes cyberLitePulse { to { opacity: .45; transform: scale(.72); } }
-
 .cyber-hero-fallback {
   background:
     radial-gradient(circle at 50% 38%, rgba(8, 145, 178, 0.21), transparent 32%),
