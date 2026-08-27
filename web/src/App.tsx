@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '@/context/SessionContext';
 import { Layout } from '@/components/shell/Layout';
 import { Shield } from 'lucide-react';
@@ -49,6 +49,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   const { session } = useSession();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [showIntro, setShowIntro] = useState(() => {
     // Play once per browser session (sessionStorage), not once ever
     const introDisabled = localStorage.getItem('sentineltrace_intro_enabled') === 'false';
@@ -57,12 +59,19 @@ export default function App() {
     return !introDisabled && !introSeen && !prefersReducedMotion;
   });
 
+  const completeStartupIntro = () => {
+    setShowIntro(false);
+    if (!session && location.pathname !== '/' && location.pathname !== '/landing') {
+      navigate('/', { replace: true });
+    }
+  };
+
   return (
     <>
       {/* Cinematic Startup Sequence (First visit or manual trigger) */}
       {showIntro && (
         <Suspense fallback={<div className="fixed inset-0 z-[9999] bg-[#02070D]" aria-label="Loading cinematic intro" />}>
-          <TeamBruteIntro onComplete={() => setShowIntro(false)} />
+          <TeamBruteIntro onComplete={completeStartupIntro} />
         </Suspense>
       )}
 
