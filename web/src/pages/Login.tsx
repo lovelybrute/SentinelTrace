@@ -71,9 +71,13 @@ export function Login() {
     }
     setLoading(true);
     setError('');
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    signIn(email, password);
-    setLoading(false);
+    try {
+      await signIn(email, password);
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'Authentication failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
