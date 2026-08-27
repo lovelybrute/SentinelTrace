@@ -462,7 +462,7 @@ body {
   position: relative;
   isolation: isolate;
   min-height: 100svh;
-  padding: 24px clamp(18px, 3vw, 48px) 30px;
+  padding: 14px clamp(14px, 2.4vw, 38px);
   overflow: hidden auto;
   color: #eafcff;
   background:
@@ -517,7 +517,7 @@ body {
   z-index: 1;
   display: grid;
   width: min(1460px, 100%);
-  min-height: calc(100svh - 126px);
+  min-height: calc(100svh - 28px);
   margin: 0 auto;
   grid-template-columns: minmax(0, 1.65fr) minmax(370px, 0.72fr);
   gap: 18px;
@@ -538,17 +538,19 @@ body {
   min-height: 690px;
   padding: 34px;
   overflow: hidden;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
   border-radius: 26px;
 }
+
+.login-intel-brand-row { position: relative; z-index: 4; display: flex; margin-bottom: 22px; align-items: center; justify-content: space-between; }
 
 .login-intel-stage::after { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0.12; background-image: linear-gradient(rgba(34,211,238,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.08) 1px,transparent 1px); background-size: 50px 50px; mask-image: linear-gradient(black, transparent 85%); }
 .login-intel-heading { position: relative; z-index: 3; max-width: 520px; }
 .login-intel-heading > span { color: #67e8f9; font: 700 8px var(--font-mono); letter-spacing: .16em; }
-.login-intel-heading h1 { margin: 9px 0 10px; color: #f1fdff; font: 800 clamp(2rem, 4vw, 3.8rem)/1.02 var(--font-display); letter-spacing: -.04em; }
+.login-intel-heading h1 { margin: 9px 0 10px; color: #f1fdff; font: 800 clamp(1.9rem, 3vw, 3rem)/1.02 var(--font-display); letter-spacing: -.04em; }
 .login-intel-heading p { max-width: 470px; margin: 0; color: #71869c; font-size: 11px; line-height: 1.65; }
 
-.login-globe-frame { position: relative; z-index: 2; min-height: 500px; margin-top: -22px; overflow: hidden; }
+.login-globe-frame { position: relative; z-index: 2; min-height: 470px; margin-top: -8px; overflow: hidden; }
 .login-globe-frame > div:first-child { position: absolute; inset: 0; height: 100% !important; }
 .login-lite-globe { position: absolute; inset: 0; overflow: hidden; }
 .login-lite-earth {
@@ -632,7 +634,7 @@ body {
 .login-intel-status span { color: #526a81; font: 7px var(--font-mono); }
 .login-intel-status strong { display: block; margin-top: 4px; color: #d9faff; font-size: 14px; }
 
-.login-access-card { align-self: center; padding: 30px; border-radius: 26px; }
+.login-access-card { display: flex; align-self: stretch; padding: clamp(24px,3vw,38px); flex-direction: column; justify-content: center; border-radius: 26px; }
 .login-access-brand { text-align: center; }
 .login-access-brand > span { display: grid; width: 52px; height: 52px; margin: 0 auto 14px; place-items: center; color: #67e8f9; border: 1px solid rgba(103,232,249,.28); border-radius: 15px; background: rgba(8,145,178,.1); box-shadow: 0 0 28px rgba(34,211,238,.1); }
 .login-access-brand p { margin: 0 0 5px; color: #55d8e8; font: 8px var(--font-mono); letter-spacing: .17em; }
@@ -1111,6 +1113,15 @@ body {
 
 .cyber-hero-media { z-index: -2; }
 .cyber-hero-media > div:first-child { width: 100%; height: 100%; }
+
+.cyber-lite-network { position: absolute; inset: 0; background: radial-gradient(circle at 50% 48%, rgba(8,145,178,.12),transparent 38%); }
+.cyber-lite-network svg { width: 100%; height: 100%; opacity: .54; }
+.cyber-lite-lines path { fill: none; stroke: rgba(34,211,238,.24); stroke-width: 1.2; stroke-dasharray: 7 11; animation: cyberLiteSignal 16s linear infinite; }
+.cyber-lite-nodes circle { transform-box: fill-box; transform-origin: center; animation: cyberLitePulse 3.8s ease-in-out infinite alternate; }
+.cyber-lite-nodes .safe { fill: #0891b2; filter: drop-shadow(0 0 7px rgba(34,211,238,.55)); }
+.cyber-lite-nodes .threat { fill: #991b1b; filter: drop-shadow(0 0 7px rgba(239,68,68,.45)); animation-delay: -1.7s; }
+@keyframes cyberLiteSignal { to { stroke-dashoffset: -144; } }
+@keyframes cyberLitePulse { to { opacity: .45; transform: scale(.72); } }
 
 .cyber-hero-fallback {
   background:
