@@ -1,0 +1,40 @@
+{
+  "schema": "sentineltrace_benchmark_v1",
+  "seed": 26106,
+  "synthetic": true,
+  "training_use": false,
+  "packs": {
+    "legitimate_institutional": {
+      "records": 100,
+      "sha256": "f756ab22dc09ab027052b0808cce3f8753acfa880fadf97614c3e419e846dc00",
+      "labels": [
+        "LEGITIMATE"
+      ]
+    },
+    "credential_phishing": {
+      "records": 100,
+      "sha256": "e1cbfece72d9e1eb478d44c301acc7892c40fcd43a1580d872cd6159d7e5fa1f",
+      "labels": [
+        "PHISHING"
+      ]
+    },
+    "bec_invoice_fraud": {
+      "records": 100,
+      "sha256": "9749295738b8e5478bb810254f695132536f479757d7ee233312b8f96ddff351",
+      "labels": [
+        "PHISHING"
+      ]
+    },
+    "evasive_phishing": {
+      "records": 100,
+      "sha256": "cc664c094036f23d51e35ecd492d8404a312b4851e782c760ad41ef0d9ff7204",
+      "labels": [
+        "PHISHING"
+      ]
+    }
+  },
+  "combined": {
+    "records": 400,
+    "sha256": "30751523c31762b4c0f40707d54bafc43b1bc84616d78e854f3915e38a85688e"
+  }
+}
