@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -21,6 +21,10 @@ import {
 import { DEMO_EMAIL_FILENAME, DEMO_EMAIL_RAW } from '@/demo/demoEmail';
 import { analyseEmail } from '@/services/analysisService';
 import { useAnalysis } from '@/context/AnalysisContext';
+
+const HeroNetwork3D = React.lazy(() =>
+  import('@/components/3d/HeroNetwork3D').then((module) => ({ default: module.HeroNetwork3D })),
+);
 
 const NAV_ITEMS = [
   { label: 'Overview', target: 'top' },
@@ -143,22 +147,9 @@ export function Landing() {
   return (
     <main id="top" className="cyber-landing">
       <div className="cyber-hero-media" aria-hidden="true">
-        <div className="cyber-lite-network">
-          <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-            <g className="cyber-lite-lines">
-              <path d="M120 540 L350 430 L560 585 L790 360 L1050 510 L1320 320" />
-              <path d="M210 690 L420 610 L680 720 L900 590 L1210 690" />
-              <path d="M290 300 L520 410 L750 260 L1010 390 L1270 230" />
-            </g>
-            <g className="cyber-lite-nodes">
-              <circle className="safe" cx="120" cy="540" r="9" /><circle className="threat" cx="350" cy="430" r="12" />
-              <circle className="safe" cx="560" cy="585" r="7" /><circle className="safe" cx="790" cy="360" r="13" />
-              <circle className="threat" cx="1050" cy="510" r="10" /><circle className="safe" cx="1320" cy="320" r="8" />
-              <circle className="threat" cx="420" cy="610" r="8" /><circle className="safe" cx="900" cy="590" r="7" />
-              <circle className="safe" cx="520" cy="410" r="6" /><circle className="threat" cx="1010" cy="390" r="6" />
-            </g>
-          </svg>
-        </div>
+        <Suspense fallback={<div className="cyber-hero-fallback" />}>
+          <HeroNetwork3D />
+        </Suspense>
         <div className="cyber-hero-scrim" />
         <div className="cyber-data-rain" />
       </div>
