@@ -19,6 +19,13 @@ def main():
     parser.add_argument("--model", type=Path, default=Path("ml/artifacts/phishing_model.joblib"))
     parser.add_argument("--dataset", type=Path, required=True)
     parser.add_argument("--output", type=Path, default=Path("ml/benchmarks/evaluation.json"))
+    parser.add_argument("--evaluation-status", default="SYNTHETIC_CHALLENGE_ONLY")
+    parser.add_argument("--dataset-name", default="Unspecified evaluation corpus")
+    parser.add_argument("--dataset-citation", default="Not supplied")
+    parser.add_argument(
+        "--limitations",
+        default="Synthetic regression evidence only. It does not replace recent, independently labeled real-world validation.",
+    )
     args = parser.parse_args()
     artifact = joblib.load(args.model)
     pipeline = artifact["pipeline"]
@@ -27,10 +34,12 @@ def main():
     truth = [str(row["label"]) for row in rows]
     predicted = list(pipeline.predict([augment_text(str(row["text"])) for row in rows]))
     report = {
-        "evaluation_status": "SYNTHETIC_CHALLENGE_ONLY",
+        "evaluation_status": args.evaluation_status,
         "evaluated_at": datetime.now(timezone.utc).isoformat(),
         "training_performed": False,
         "dataset": str(args.dataset),
+        "dataset_name": args.dataset_name,
+        "dataset_citation": args.dataset_citation,
         "dataset_sha256": hashlib.sha256(args.dataset.read_bytes()).hexdigest(),
         "records": len(rows),
         "label_distribution": dict(Counter(truth)),
@@ -40,7 +49,7 @@ def main():
         "f1_macro": round(float(f1_score(truth, predicted, average="macro", zero_division=0)), 4),
         "confusion_matrix": confusion_matrix(truth, predicted, labels=labels).tolist(),
         "classification_report": classification_report(truth, predicted, labels=labels, output_dict=True, zero_division=0),
-        "limitations": "Synthetic regression evidence only. It does not replace recent, independently labeled real-world validation.",
+        "limitations": args.limitations,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
