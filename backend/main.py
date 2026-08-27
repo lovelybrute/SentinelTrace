@@ -5,7 +5,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, status, Depends, Query, Response
+from fastapi import FastAPI, File, UploadFile, HTTPException, status, Depends, Query, Response, Request
+from pydantic import BaseModel, EmailStr
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
@@ -20,6 +21,7 @@ from database import (
 from report_generator import ReportGenerator
 from stix_exporter import STIXExporter
 from validated_model import read_model_metrics
+from auth import authenticate, configured_users, decode_token, issue_token
 
 
 # ============================================================
@@ -51,6 +53,21 @@ init_db()
 # Report & STIX generators
 report_gen = ReportGenerator()
 stix_exp = STIXExporter()
+
+_login_attempts: dict[str, list[float]] = {}
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+def _session_payload(claims: dict) -> dict:
+    return {
+        "analystId": claims["analyst_id"], "displayName": claims["display_name"],
+        "email": claims["sub"], "role": claims["role"], "unit": claims["unit"],
+        "signedInAt": datetime.fromtimestamp(claims["iat"], timezone.utc).isoformat(), "demo": False,
+    }
 
 
 def log_audit(db: Session, action: str, description: str, case_id: Optional[str] = None, evidence_id: Optional[str] = None, user: str = "Analyst"):
@@ -116,8 +133,41 @@ def health_check(db: Session = Depends(get_db)):
         "database": "connected" if db_ok else "error",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "environment": settings.ENVIRONMENT,
-        "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_BYTES / (1024 * 1024)
+        "max_upload_size_mb": settings.MAX_UPLOAD_SIZE_BYTES / (1024 * 1024),
+        "real_login": "configured" if configured_users() else "disabled",
+        "production_secret_configured": settings.JWT_SECRET != "sentineltrace-dev-secret-key-change-in-production-2026",
     }
+
+
+@app.post("/auth/login")
+def login(credentials: LoginRequest, request: Request):
+    """Verify a configured analyst and issue a short-lived signed access token."""
+    if not configured_users():
+        raise HTTPException(status_code=503, detail="Real analyst login is not configured. Use the labelled demo mode or contact the administrator.")
+    key = f"{request.client.host if request.client else 'unknown'}:{credentials.email.lower()}"
+    now = datetime.now(timezone.utc).timestamp()
+    attempts = [stamp for stamp in _login_attempts.get(key, []) if now - stamp < 300]
+    if len(attempts) >= 5:
+        raise HTTPException(status_code=429, detail="Too many login attempts. Try again in five minutes.")
+    user = authenticate(credentials.email, credentials.password)
+    if not user:
+        attempts.append(now)
+        _login_attempts[key] = attempts
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    _login_attempts.pop(key, None)
+    token = issue_token(credentials.email, user)
+    claims = decode_token(token)
+    return {"access_token": token, "token_type": "bearer", "expires_in": settings.ACCESS_TOKEN_TTL_MINUTES * 60, "session": _session_payload(claims or {})}
+
+
+@app.get("/auth/me")
+def current_user(request: Request):
+    authorization = request.headers.get("authorization", "")
+    token = authorization[7:] if authorization.lower().startswith("bearer ") else ""
+    claims = decode_token(token)
+    if not claims:
+        raise HTTPException(status_code=401, detail="Missing, invalid, or expired access token.")
+    return _session_payload(claims)
 
 
 @app.get("/model/metrics")
@@ -151,6 +201,11 @@ async def analyze_email(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid file format. Please upload an RFC-5322 .eml email file."
         )
+
+    if file.content_type and file.content_type.lower() not in {
+        "message/rfc822", "application/octet-stream", "text/plain", "application/eml"
+    }:
+        raise HTTPException(status_code=400, detail="Invalid content type. Upload an RFC-5322 email message.")
 
     content = await file.read()
     if not content:
