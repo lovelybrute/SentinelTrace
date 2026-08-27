@@ -1,0 +1,7 @@
+{
+  "records": 2000,
+  "input_sha256": "ad15f63cb8db2caaee33c442f1ff4488b9444530a4c42ab63bb580016b160bd3",
+  "output_sha256": "e320dff86545368509d4ceeb944733e68d59716a73d1266144811102f4cff053",
+  "citation": "Miltchev, Rangelov, Genchev (2024), Phishing validation emails dataset, DOI 10.5281/zenodo.13474746",
+  "training_use": false
+}
