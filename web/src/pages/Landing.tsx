@@ -91,6 +91,32 @@ export function Landing() {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    let frame = 0;
+    const updateActiveSection = () => {
+      frame = 0;
+      const marker = window.innerHeight * 0.38;
+      const capabilitiesTop = document.getElementById('capabilities')?.getBoundingClientRect().top ?? Infinity;
+      const validationTop = document.getElementById('validation')?.getBoundingClientRect().top ?? Infinity;
+
+      if (validationTop <= marker) setActive('Validation');
+      else if (capabilitiesTop <= marker) setActive('Capabilities');
+      else setActive('Overview');
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateActiveSection);
+    };
+
+    updateActiveSection();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
   const navigateTo = (label: string, target: string) => {
     setActive(label);
     setMenuOpen(false);
@@ -140,6 +166,7 @@ export function Landing() {
               key={item.label}
               type="button"
               className={active === item.label ? 'active' : ''}
+              aria-current={active === item.label ? 'page' : undefined}
               onClick={() => navigateTo(item.label, item.target)}
             >
               {item.label}
