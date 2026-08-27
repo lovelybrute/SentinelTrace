@@ -13,6 +13,8 @@ backend/sentineltrace.db
 *.log
 node_modules/
 ml/datasets/
+ml/external/*.csv
+ml/external/*.jsonl
 ml/artifacts/*.joblib
 ml/artifacts/*.joblib.sha256
 ml/artifacts/metrics.json
