@@ -47,7 +47,12 @@ Built strictly around foundational Internet RFC standards and modern machine lea
 - **Static File Forensics**: Magic-byte MIME verification, executable double-extension detection (`.pdf.exe`), and SHA-256/SHA-512 cryptographic hashing. No dangerous dynamic execution.
 - **SSRF-Protected URL Deconstruction**: Resolves link structures while strictly blocking access to internal or private subnets.
 
-### G. Explainable Hybrid Threat Scoring (0-100)
+### G. Validated ML and Explainable Hybrid Threat Scoring (0-100)
+- **Validated Binary Model**: TF-IDF word/bigram features with Logistic Regression, selected against SGD log-loss on a deduplicated stratified holdout.
+- **Evaluation Evidence**: 106,159 records, 84,927 training records and 21,232 held-out test records; 98.74% accuracy and 98.73% macro F1 on the supplied corpus.
+- **Integrity Enforcement**: The backend loads the model only when its SHA-256 sidecar matches and validation metadata meets minimum held-out support.
+- **Honest Scope**: The uploaded MeAJOR release contains TREC-5/6/7 sources; its positive class includes broad unsolicited/malicious email and is disclosed as a phishing-proxy label. Cross-dataset validation remains future work.
+- **Subtype Separation**: A small Gradient Boosting prototype estimates the descriptive attack subtype but does not drive the quantitative ML risk contribution when the validated model is available.
 - **Multi-Factor Synthesis**:
   $$\text{Final Score} = (\text{Rule Score} \times 0.35) + (\text{ML Score} \times 0.40) + (\text{Reputation} \times 0.15) + (\text{Campaign Correlation} \times 0.10)$$
 - **Transparent Factor Weighting**: Every threat signal is explicitly labeled (`STRONG`, `MODERATE`, `WEAK`, `CONTEXTUAL`) with evidence strings.
@@ -85,7 +90,7 @@ SIH26106_SentinelTrace/
 │   ├── mitre_mapper.py           # MITRE ATT&CK Enterprise Matrix Mapper
 │   ├── stix_exporter.py          # OASIS STIX 2.1 JSON Bundle Generator
 │   ├── report_generator.py       # HTML, JSON & PDF Forensic Report Builder
-│   └── tests/                    # Comprehensive Pytest & E2E Test Suite (100% Passing)
+│   └── tests/                    # Unit, API and hybrid-scoring regression tests
 │
 ├── web/                          # Modern React 18 + TypeScript + Tailwind SOC Interface
 │   └── src/
@@ -102,7 +107,7 @@ SIH26106_SentinelTrace/
 │       │   └── ForensicReports.tsx      # Exportable Investigation Reports
 │       └── services/                    # Typed API Client & Wire Schema Layer
 │
-├── samples/                      # 9 Real-World Forensic Sample Attack Vectors (.eml)
+├── samples/                      # Forensic demonstration attack vectors (.eml)
 ├── SIH_REQUIREMENT_MAPPING.md    # Detailed Requirement Traceability Matrix
 ├── README.md                     # Platform Documentation
 └── requirements.txt              # Production Python Dependencies
@@ -114,9 +119,10 @@ SIH26106_SentinelTrace/
 
 SentinelTrace features automated regression testing covering all core cryptographic, network, and forensic parsing components:
 
-- **19/19 Pytest Backend Unit Tests Passing (100%)**
-- **Comprehensive E2E Endpoint & API Verification Passing**
-- **TypeScript Strict Mode Verification Clean (0 errors)**
+- **27 automated backend tests currently collected**, including API, SPF, DKIM/DMARC, relay parsing, BEC/lookalike/attachment, validated-model and hybrid-scoring coverage.
+- **25/25 tests passed in the last complete Windows run before the scoring integration; 6 focused ML/scoring tests passed after integration.**
+- **TypeScript strict-mode verification and the production Vite build pass.**
+- The unrestricted E2E smoke path can perform external IP geolocation lookups; restricted/privacy-sensitive verification should run focused local tests or mock that provider rather than transmitting sample indicators.
 
 To run tests locally:
 ```bash
@@ -130,8 +136,9 @@ python backend/tests/test_e2e_smoke.py
 
 ### Step 1: Start Backend
 ```bash
-python backend/main.py
-# Server runs on http://localhost:8000
+cd backend
+python -m uvicorn main:app --reload
+# Server runs on http://127.0.0.1:8000
 # OpenAPI Docs available at http://localhost:8000/docs
 ```
 
@@ -161,5 +168,5 @@ Upload any sample from `samples/` into the platform:
 | **Innovation** | Advanced Multi-Layer Defense | Integrates RFC SPF/DKIM/DMARC with MTA timeline reconstruction, 7-class BEC detection, D3 force graph, and STIX 2.1 export. |
 | **Technical Depth** | Cryptographic & Protocol Rigor | Pure RFC compliance with `dnspython` DNS lookups, `ipaddress` network boundary validation, and zero false PASS badges. |
 | **User Experience** | Enterprise SOC Dashboard | 14 specialized investigation interfaces, dark-mode SOC aesthetics, interactive D3 force link graph, and TopoJSON geo routing. |
-| **Completeness** | Full SIH Problem Scope | Meets 100% of problem requirements for Problem ID 26106 with live automated verification scripts. |
-| **Feasibility** | Production Readiness | Clean separation of concerns, SQLite/PostgreSQL ORM schemas, RESTful APIs, and Docker/cloud deployability. |
+| **Completeness** | SIH Problem Scope | Implements the core detection, forensic, geolocation, explainability and investigation workflow; demonstration-backed views are explicitly labelled. |
+| **Feasibility** | Deployable Prototype | Clean separation of concerns, SQLite/PostgreSQL ORM schemas and RESTful APIs. Production rollout still requires real identity management, organization telemetry integrations and deployment-specific monitoring. |
