@@ -279,11 +279,10 @@ function backendNoteFor(error: ApiError): string {
 }
 
 /**
- * Merge the backend result over the local one. The backend owns one thing the
- * local engine cannot obtain from a browser: records resolved from live DNS, plus
- * the persisted `analysis_id`. Everything else stays local, because the local
- * engine parsed the same bytes and its structure is what correlation was built
- * against. Note that this merge makes the backend forensics *available* to
+ * Merge the backend result over the local one. The backend owns live DNS,
+ * persisted identifiers, and the validated-model hybrid score. Message parsing
+ * stays local because correlation is built around the browser's representation
+ * of the same evidence. Note that this merge makes backend forensics *available* to
  * correlation as evaluator input — `correlateAuthentication` still evaluates every
  * verdict itself, since the backend's `status: "pass"` means only that a policy is
  * published, not that this message authenticated against it.
@@ -292,6 +291,9 @@ function mergeWire(local: WireAnalysis, backend: WireAnalysis): WireAnalysis {
   const forensics: WireForensics | undefined = backend.forensics ?? local.forensics;
   return {
     ...local,
+    // Preserve the validated ML probability, subtype evidence and hybrid score.
+    // Dropping this object would silently fall back to the browser-only rules.
+    threat_assessment: backend.threat_assessment,
     ...(forensics ? { forensics } : {}),
     ...(backend.analysis_id != null ? { analysis_id: backend.analysis_id } : {}),
     ...(backend.storage_status ? { storage_status: backend.storage_status } : {}),
