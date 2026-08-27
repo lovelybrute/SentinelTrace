@@ -129,6 +129,18 @@ export interface ModelMetrics {
   selected_model?: string;
   models?: Record<string, { accuracy: number; precision_macro: number; recall_macro: number; f1_macro: number; confusion_matrix: number[][] }>;
   limitations?: string;
+  external_validation?: {
+    evaluation_status: string;
+    dataset_name: string;
+    dataset_citation: string;
+    records: number;
+    training_dataset_exclusion_verified: boolean;
+    before: { accuracy: number; precision_macro: number; recall_macro: number; f1_macro: number; confusion_matrix: number[][] };
+    after: { accuracy: number; precision_macro: number; recall_macro: number; f1_macro: number; confusion_matrix: number[][] };
+    delta: { accuracy: number; f1_macro: number };
+    deployment_decision: string;
+    limitations: string;
+  };
 }
 
 export function fetchModelMetrics(signal?: AbortSignal): Promise<ModelMetrics> {
