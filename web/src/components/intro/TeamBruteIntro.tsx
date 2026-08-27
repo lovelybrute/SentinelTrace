@@ -58,6 +58,7 @@ const VOICE_PROFILES: Array<{
       'Microsoft George',
       'Microsoft Ravi',
       'Microsoft Hemant',
+      'Microsoft Prabhat',
       'Google UK English Male',
       'Daniel',
       'Alex',
@@ -77,22 +78,47 @@ const VOICE_PROFILES: Array<{
 const WELCOME_MESSAGE =
   'Welcome to SentinelTrace. Initializing forensic intelligence systems. Developed by Team Brute.';
 
-function createVoiceUtterance(profileId: VoiceProfileId, text: string) {
+function findMaleVoice(profileId: VoiceProfileId) {
   if (!('speechSynthesis' in window)) return null;
   const profile = VOICE_PROFILES.find((item) => item.id === profileId) ?? VOICE_PROFILES[0];
   const voices = window.speechSynthesis.getVoices();
   const englishVoices = voices.filter((voice) => voice.lang.toLowerCase().startsWith('en'));
-  const preferredVoice = profile.preferredNames
+  return profile.preferredNames
     .map((name) => englishVoices.find((voice) => voice.name.toLowerCase().includes(name.toLowerCase())))
-    .find(Boolean);
+    .find(Boolean) ?? null;
+}
 
-  // Never fall back to the browser's default voice: it may be female.
-  // If this device has no recognised male voice, the intro continues silently.
-  if (!preferredVoice) return null;
+function waitForMaleVoice(profileId: VoiceProfileId, timeout = 3000) {
+  const immediate = findMaleVoice(profileId);
+  if (immediate || !('speechSynthesis' in window)) return Promise.resolve(immediate);
+
+  return new Promise<SpeechSynthesisVoice | null>((resolve) => {
+    let settled = false;
+    const finish = (voice: SpeechSynthesisVoice | null) => {
+      if (settled) return;
+      settled = true;
+      window.speechSynthesis.removeEventListener('voiceschanged', check);
+      window.clearInterval(pollId);
+      window.clearTimeout(timeoutId);
+      resolve(voice);
+    };
+    const check = () => {
+      const voice = findMaleVoice(profileId);
+      if (voice) finish(voice);
+    };
+    const pollId = window.setInterval(check, 120);
+    const timeoutId = window.setTimeout(() => finish(findMaleVoice(profileId)), timeout);
+    window.speechSynthesis.addEventListener('voiceschanged', check);
+    window.speechSynthesis.getVoices();
+  });
+}
+
+function createVoiceUtterance(profileId: VoiceProfileId, text: string, voice: SpeechSynthesisVoice) {
+  const profile = VOICE_PROFILES.find((item) => item.id === profileId) ?? VOICE_PROFILES[0];
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.voice = preferredVoice;
-  utterance.lang = preferredVoice.lang || 'en-US';
+  utterance.voice = voice;
+  utterance.lang = voice.lang || 'en-US';
   utterance.rate = profile.rate;
   utterance.pitch = profile.pitch;
   utterance.volume = 0.92;
@@ -410,6 +436,7 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
   const [stage, setStage] = useState(0);
   const [started, setStarted] = useState(false);
   const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
   const [selectedVoice, setSelectedVoice] = useState<VoiceProfileId>(() => {
     const saved = localStorage.getItem('sentineltrace_intro_voice');
     return VOICE_PROFILES.some((profile) => profile.id === saved)
@@ -437,23 +464,31 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
     setStarted(true);
   }, []);
 
-  const previewVoice = useCallback((profileId: VoiceProfileId) => {
-    const utterance = createVoiceUtterance(profileId, `SentinelTrace ${VOICE_PROFILES.find((item) => item.id === profileId)?.name} voice ready.`);
-    if (!utterance) return;
+  const previewVoice = useCallback(async (profileId: VoiceProfileId) => {
+    setVoiceError('');
+    const voice = await waitForMaleVoice(profileId);
+    if (!voice) {
+      setVoiceError('No compatible male system voice was found on this browser.');
+      return;
+    }
+    const utterance = createVoiceUtterance(profileId, `SentinelTrace ${VOICE_PROFILES.find((item) => item.id === profileId)?.name} voice ready.`, voice);
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
   }, []);
 
-  const startWithSound = useCallback(() => {
+  const startWithSound = useCallback(async () => {
     localStorage.setItem('sentineltrace_intro_voice', selectedVoice);
-    const utterance = createVoiceUtterance(selectedVoice, WELCOME_MESSAGE);
-    if (!utterance) {
-      beginSequence();
+    setVoiceError('');
+    setIsAnnouncing(true);
+    const voice = await waitForMaleVoice(selectedVoice);
+    if (!voice) {
+      setIsAnnouncing(false);
+      setVoiceError('Male voice unavailable. Install or enable an English male system voice, then try again.');
       return;
     }
+    const utterance = createVoiceUtterance(selectedVoice, WELCOME_MESSAGE, voice);
 
     window.speechSynthesis.cancel();
-    setIsAnnouncing(true);
     let finished = false;
     const finish = () => {
       if (finished) return;
@@ -581,7 +616,7 @@ export function TeamBruteIntro({ onComplete, forcePlay = false }: TeamBruteIntro
             <VolumeX size={14} /> ENTER SILENTLY
           </button>
           <p className="intro-voice-note">
-            Male voice only. If this device has no compatible male system voice, the intro enters silently.
+            {voiceError || 'Male voice only. Voice loading may take a moment on first use.'}
           </p>
         </section>
       </div>
