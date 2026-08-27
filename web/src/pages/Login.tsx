@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -12,8 +12,9 @@ import {
   Server,
   Shield,
 } from 'lucide-react';
-import { InteractiveGlobe3D } from '@/components/3d/InteractiveGlobe3D';
 import { useSession } from '@/context/SessionContext';
+
+const ThreatGlobe = React.lazy(() => import('@/components/dashboard/ThreatGlobe'));
 
 const DEMO_ROLES = [
   { role: 'SOC_ANALYST' as const, label: 'SOC Analyst', sub: 'Tier-2 Email Threat Analysis', color: '#22d3ee' },
@@ -71,7 +72,9 @@ export function Login() {
           </div>
 
           <div className="login-globe-frame">
-            <InteractiveGlobe3D />
+            <Suspense fallback={<div className="login-globe-loading">INITIALIZING EARTH INTELLIGENCE…</div>}>
+              <ThreatGlobe height={500} />
+            </Suspense>
             <div className="login-globe-scan" aria-hidden="true" />
             <div className="login-intel-tag login-intel-tag-threat">
               <Radio size={12} /> <span><b>THREAT DETECTED</b>AS60729 · HIGH RISK</span>
