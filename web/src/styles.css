@@ -885,7 +885,7 @@ body {
   min-height: 100svh;
   padding: 92px clamp(16px, 3.4vw, 46px) 24px;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
   color: #f4fdff;
   background: #01050c;
 }
@@ -1163,6 +1163,128 @@ body {
   letter-spacing: 0.09em;
 }
 
+.cyber-detail-section {
+  width: min(1180px, 100%);
+  margin: 96px auto 0;
+  padding: 88px 0 20px;
+  scroll-margin-top: 72px;
+}
+
+.cyber-section-heading {
+  max-width: 760px;
+  margin-bottom: 34px;
+}
+
+.cyber-section-heading > span,
+.cyber-validation-title span,
+.cyber-limits-card > span {
+  color: #67e8f9;
+  font: 700 9px var(--font-mono);
+  letter-spacing: 0.14em;
+}
+
+.cyber-section-heading h2 {
+  margin: 12px 0 14px;
+  color: #f0fdff;
+  font: 800 clamp(2rem, 4.5vw, 3.9rem)/1.05 var(--font-display);
+  letter-spacing: -0.035em;
+}
+
+.cyber-section-heading p {
+  max-width: 660px;
+  margin: 0;
+  color: #8295ad;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.cyber-capability-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cyber-capability-card,
+.cyber-validation-main,
+.cyber-limits-card {
+  border: 1px solid rgba(165, 243, 252, 0.14);
+  background: linear-gradient(145deg, rgba(7, 21, 39, 0.78), rgba(2, 9, 20, 0.68));
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+  backdrop-filter: blur(22px) saturate(130%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.cyber-capability-card {
+  position: relative;
+  min-height: 232px;
+  padding: 24px;
+  overflow: hidden;
+  border-radius: 20px;
+  transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.cyber-capability-card:hover {
+  border-color: rgba(103, 232, 249, 0.32);
+  background: linear-gradient(145deg, rgba(8, 31, 51, 0.88), rgba(3, 13, 28, 0.76));
+  transform: translateY(-3px);
+}
+
+.cyber-capability-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 28px;
+  place-items: center;
+  color: #67e8f9;
+  border: 1px solid rgba(103, 232, 249, 0.22);
+  border-radius: 14px;
+  background: rgba(8, 145, 178, 0.11);
+}
+
+.cyber-capability-card > span { color: #4f657d; font: 8px var(--font-mono); letter-spacing: 0.12em; }
+.cyber-capability-card h3 { margin: 7px 0 8px; color: #eafcff; font-size: 15px; }
+.cyber-capability-card p { margin: 0; color: #788ba2; font-size: 11px; line-height: 1.65; }
+.cyber-card-line { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; opacity: 0; background: linear-gradient(90deg, transparent, #22d3ee, transparent); transition: opacity 180ms ease; }
+.cyber-capability-card:hover .cyber-card-line { opacity: 0.72; }
+
+.cyber-validation-section { padding-bottom: 84px; }
+.cyber-validation-layout { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.75fr); gap: 14px; }
+.cyber-validation-main,
+.cyber-limits-card { padding: 26px; border-radius: 22px; }
+
+.cyber-validation-title { display: flex; align-items: center; gap: 12px; color: #67e8f9; }
+.cyber-validation-title h3 { margin: 4px 0 0; color: #e8fbff; font-size: 14px; }
+.cyber-validation-title > strong { display: inline-flex; margin-left: auto; padding: 7px 10px; align-items: center; gap: 6px; color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.22); border-radius: 999px; background: rgba(6, 78, 59, 0.12); font: 8px var(--font-mono); }
+
+.cyber-metric-grid { display: grid; margin-top: 26px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.cyber-metric-grid > div { padding: 16px; border: 1px solid rgba(165, 243, 252, 0.1); border-radius: 15px; background: rgba(1, 8, 18, 0.45); }
+.cyber-metric-grid span { display: block; color: #667c94; font: 9px var(--font-mono); }
+.cyber-metric-grid strong { display: block; margin-top: 8px; color: #a5f3fc; font: 800 clamp(17px, 2vw, 25px) var(--font-display); }
+.cyber-validation-meta { display: flex; margin-top: 16px; padding-top: 16px; justify-content: space-between; gap: 12px; color: #61748b; border-top: 1px solid rgba(165, 243, 252, 0.09); font: 8px var(--font-mono); }
+.cyber-validation-meta b { color: #9eb2c7; font-weight: 600; }
+
+.cyber-limits-card { color: #a78bfa; }
+.cyber-limits-card > span { display: block; margin-top: 20px; color: #a78bfa; }
+.cyber-limits-card h3 { margin: 8px 0 10px; color: #eeeafe; font-size: 18px; }
+.cyber-limits-card p { margin: 0; color: #7e7997; font-size: 11px; line-height: 1.7; }
+.cyber-limits-card button { display: inline-flex; margin-top: 22px; align-items: center; gap: 7px; color: #c4b5fd; font: 9px var(--font-mono); }
+.cyber-limits-card button:hover { color: #ede9fe; }
+
+.cyber-landing-footer {
+  display: flex;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 24px 0 10px;
+  align-items: center;
+  justify-content: space-between;
+  color: #3f536b;
+  border-top: 1px solid rgba(165, 243, 252, 0.09);
+  font: 8px var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.cyber-landing-footer button { display: inline-flex; align-items: center; gap: 6px; color: #8fe8f2; }
+
 @keyframes cyberGridDrift { to { transform: translate3d(55px, 55px, 0); } }
 @keyframes cyberStatusPulse { 50% { opacity: 0.45; transform: scale(0.75); } }
 
@@ -1381,6 +1503,8 @@ body {
   }
   .cyber-mobile-sheet .cyber-pill-action { margin-top: 5px; }
   .cyber-hero-foot { grid-template-columns: 1fr; }
+  .cyber-capability-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cyber-validation-layout { grid-template-columns: 1fr; }
 
   .dashboard-page > .grid:last-child {
     grid-template-columns: 1fr !important;
@@ -1412,6 +1536,14 @@ body {
   .cyber-stat-row { grid-template-columns: 1fr; }
   .cyber-stat-card { min-height: 96px; }
   .cyber-hero-status { display: none; }
+  .cyber-detail-section { margin-top: 56px; padding-top: 68px; }
+  .cyber-capability-grid { grid-template-columns: 1fr; }
+  .cyber-capability-card { min-height: 210px; }
+  .cyber-validation-title { align-items: flex-start; flex-wrap: wrap; }
+  .cyber-validation-title > strong { width: 100%; margin-left: 0; justify-content: center; }
+  .cyber-metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cyber-validation-meta { flex-direction: column; }
+  .cyber-landing-footer { flex-direction: column; gap: 14px; text-align: center; }
 
   .login-shell { padding: 18px 12px; }
   .login-glass-card { padding: 26px 20px 22px; border-radius: 22px; }
