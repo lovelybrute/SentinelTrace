@@ -15,6 +15,7 @@ export function Settings() {
   const [introEnabled, setIntroEnabled] = useState(() => {
     return localStorage.getItem('sentineltrace_intro_enabled') !== 'false';
   });
+  const [visualMode, setVisualMode] = useState(() => localStorage.getItem('sentineltrace_visual_mode') || 'balanced');
 
   const [privacy, setPrivacy] = useState<PrivacySettings>({
     maskRecipients: true,
@@ -28,6 +29,9 @@ export function Settings() {
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     localStorage.setItem('sentineltrace_intro_enabled', introEnabled ? 'true' : 'false');
+    localStorage.setItem('sentineltrace_visual_mode', visualMode);
+    document.documentElement.dataset.visualMode = visualMode;
+    window.dispatchEvent(new CustomEvent('sentineltrace:visual-mode', { detail: visualMode }));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -134,6 +138,15 @@ export function Settings() {
           </p>
 
           <div className="flex flex-col gap-4">
+            <label className="p-3 rounded-lg border border-border" style={{ background: 'rgba(255,255,255,0.02)' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)', marginBottom: 6 }}>Performance Profile</div>
+              <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 10 }}>Balanced is recommended. Lite replaces the large WebGL globe and stops continuous decorative motion.</div>
+              <select className="st-input" value={visualMode} onChange={event => setVisualMode(event.target.value)}>
+                <option value="balanced">Balanced — recommended</option>
+                <option value="full">Cinematic — maximum 3D</option>
+                <option value="lite">Lite — low-power devices</option>
+              </select>
+            </label>
             <label className="flex items-center justify-between p-3 rounded-lg border border-border cursor-pointer" style={{ background: 'rgba(255,255,255,0.02)' }}>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>Team Brute Cinematic Intro</div>
