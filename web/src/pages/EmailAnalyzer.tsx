@@ -242,6 +242,7 @@ function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalys
   const { assessment, score } = analysis;
   const color = score.level === 'CRITICAL' ? '#ef4444' : score.level === 'HIGH' ? '#f97316' : score.level === 'MEDIUM' ? '#f59e0b' : '#22c55e';
   const classLabel = assessment.classification.replace(/_/g, ' ');
+  const modelEvidence = analysis.modelEvidence;
 
   return (
     <div className="panel-elevated p-6 border-l-4" style={{ borderLeftColor: color }}>
@@ -267,6 +268,33 @@ function VerdictCard({ analysis, onStartInvestigation }: { analysis: EmailAnalys
               {assessment.narrative}
             </p>
           </div>
+
+          {(modelEvidence.validatedPhishingProbability !== null || modelEvidence.attackSubtype) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3">
+                <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-cyan-400">
+                  Validated phishing probability
+                </div>
+                <div className="mt-1 text-xl font-black text-cyan-300">
+                  {modelEvidence.validatedPhishingProbability === null
+                    ? 'Unavailable'
+                    : `${modelEvidence.validatedPhishingProbability.toFixed(1)}%`}
+                </div>
+                <div className="mt-1 text-[10px] text-slate-500">Used in the hybrid ML risk contribution</div>
+              </div>
+              <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
+                <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-violet-400">
+                  Attack subtype estimate
+                </div>
+                <div className="mt-1 text-lg font-black text-violet-300">
+                  {(modelEvidence.attackSubtype || 'Unavailable').replace(/_/g, ' ')}
+                </div>
+                <div className="mt-1 text-[10px] text-slate-500">
+                  Prototype classifier—descriptive, not the validated probability
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Explainable Factor Breakdown ("WHY?") */}
           <div>
