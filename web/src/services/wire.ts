@@ -44,6 +44,12 @@ export interface WireThreatAssessment {
   threat_score: number;
   threat_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   risk_factors: string[];
+  score_breakdown?: {
+    validated_phishing_probability?: number | null;
+    prototype_primary_classification?: string | null;
+    prototype_confidence?: number | null;
+    ml_probability_source?: string;
+  };
 }
 
 export interface WireDkim {
