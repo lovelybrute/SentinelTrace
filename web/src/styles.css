@@ -874,6 +874,298 @@ body {
 /* Water-touch feedback — visual only, never intercepts interaction   */
 /* ------------------------------------------------------------------ */
 
+/* ------------------------------------------------------------------ */
+/* Cyber landing — floating pill composition over live threat graph   */
+/* ------------------------------------------------------------------ */
+
+.cyber-landing {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 100svh;
+  padding: 92px clamp(16px, 3.4vw, 46px) 24px;
+  flex-direction: column;
+  overflow: hidden;
+  color: #f4fdff;
+  background: #01050c;
+}
+
+.cyber-hero-media,
+.cyber-hero-fallback,
+.cyber-hero-scrim,
+.cyber-data-rain {
+  position: absolute;
+  inset: 0;
+}
+
+.cyber-hero-media { z-index: -2; }
+.cyber-hero-media > div:first-child { width: 100%; height: 100%; }
+
+.cyber-hero-fallback {
+  background:
+    radial-gradient(circle at 50% 38%, rgba(8, 145, 178, 0.21), transparent 32%),
+    linear-gradient(145deg, #020916, #01040b);
+}
+
+.cyber-hero-scrim {
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(72% 58% at 50% 42%, rgba(1, 7, 16, 0.08) 24%, rgba(1, 6, 15, 0.54) 76%, rgba(0, 3, 9, 0.93) 100%),
+    linear-gradient(180deg, rgba(1, 5, 13, 0.72) 0%, rgba(2, 7, 16, 0.1) 28%, rgba(1, 5, 13, 0.2) 58%, rgba(1, 5, 13, 0.88) 100%);
+}
+
+.cyber-data-rain {
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.075;
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 54px, rgba(34, 211, 238, 0.2) 55px, transparent 56px),
+    repeating-linear-gradient(0deg, transparent 0 54px, rgba(34, 211, 238, 0.16) 55px, transparent 56px);
+  mask-image: linear-gradient(transparent, black 24%, black 72%, transparent);
+  animation: cyberGridDrift 14s linear infinite;
+}
+
+.cyber-pill-nav {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  z-index: 80;
+  display: flex;
+  width: min(1180px, calc(100% - 32px));
+  min-height: 58px;
+  padding: 7px 8px 7px 14px;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid rgba(165, 243, 252, 0.16);
+  border-radius: 999px;
+  background: rgba(3, 11, 24, 0.58);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  transform: translateX(-50%);
+}
+
+.cyber-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #ecfeff;
+  font: 800 12px var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.cyber-brand-mark {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: #67e8f9;
+  border: 1px solid rgba(103, 232, 249, 0.28);
+  border-radius: 50%;
+  background: rgba(8, 145, 178, 0.13);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.12);
+}
+
+.cyber-nav-rail {
+  display: flex;
+  margin-inline: auto;
+  padding: 4px;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid rgba(165, 243, 252, 0.11);
+  border-radius: 999px;
+  background: rgba(2, 8, 18, 0.52);
+}
+
+.cyber-nav-rail button {
+  padding: 7px 15px;
+  color: #8ca0b9;
+  border-radius: 999px;
+  font-size: 11px;
+  transition: color 180ms ease, background 180ms ease;
+}
+
+.cyber-nav-rail button:hover { color: #e6fbff; }
+.cyber-nav-rail button.active { color: #eaffff; background: rgba(103, 232, 249, 0.12); }
+
+.cyber-nav-actions { display: flex; align-items: center; gap: 14px; }
+.cyber-login-link { color: #91a3ba; font-size: 11px; }
+.cyber-login-link:hover { color: #d9fbff; }
+
+.cyber-pill-action,
+.cyber-primary-cta,
+.cyber-demo-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.cyber-pill-action {
+  padding: 10px 18px;
+  color: #001219;
+  background: linear-gradient(180deg, #ecfeff, #a5f3fc);
+  box-shadow: 0 8px 24px rgba(34, 211, 238, 0.18);
+  font-size: 10px;
+}
+
+.cyber-menu-toggle { display: none; margin-left: auto; color: #a5f3fc; padding: 9px; }
+.cyber-mobile-sheet { display: none; }
+
+.cyber-hero-body {
+  display: flex;
+  width: min(850px, 100%);
+  margin: auto;
+  padding: clamp(48px, 7vh, 84px) 0 clamp(44px, 7vh, 76px);
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.cyber-live-badge {
+  display: inline-flex;
+  margin-bottom: 20px;
+  padding: 7px 12px;
+  align-items: center;
+  gap: 8px;
+  color: #93eaf5;
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  border-radius: 999px;
+  background: rgba(3, 15, 30, 0.52);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  font: 700 9px var(--font-mono);
+  letter-spacing: 0.13em;
+}
+
+.cyber-live-badge span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+  animation: cyberStatusPulse 1.8s ease-in-out infinite;
+}
+
+.cyber-hero-body h1 {
+  margin: 0;
+  color: #f8feff;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6.4vw, 5.4rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-shadow: 0 5px 40px rgba(0, 0, 0, 0.72);
+}
+
+.cyber-hero-body h1 span {
+  display: block;
+  margin-bottom: 5px;
+  color: #9eeef7;
+  font-size: 0.67em;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.cyber-hero-body > p {
+  max-width: 680px;
+  margin: 22px auto 28px;
+  color: rgba(213, 231, 242, 0.76);
+  font-size: clamp(13px, 1.45vw, 16px);
+  line-height: 1.65;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.75);
+}
+
+.cyber-hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+.cyber-primary-cta,
+.cyber-demo-cta { min-height: 48px; padding: 0 23px; font-size: 11px; }
+
+.cyber-primary-cta {
+  color: #00131a;
+  background: linear-gradient(180deg, #f1feff 0%, #b3f4fa 100%);
+  box-shadow: 0 12px 36px rgba(34, 211, 238, 0.2), 0 0 36px rgba(34, 211, 238, 0.08);
+}
+
+.cyber-demo-cta {
+  color: #c4f7fc;
+  border: 1px solid rgba(165, 243, 252, 0.25);
+  background: rgba(2, 11, 24, 0.62);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.cyber-primary-cta:hover,
+.cyber-demo-cta:hover:not(:disabled),
+.cyber-pill-action:hover { transform: translateY(-2px); filter: brightness(1.07); }
+.cyber-demo-cta:disabled { opacity: 0.65; cursor: wait; }
+
+.cyber-hero-foot {
+  display: grid;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  grid-template-columns: minmax(240px, 1.1fr) minmax(0, 2fr);
+  gap: 12px;
+}
+
+.cyber-note-card,
+.cyber-stat-card {
+  border: 1px solid rgba(165, 243, 252, 0.14);
+  background: linear-gradient(135deg, rgba(7, 21, 39, 0.7), rgba(2, 9, 20, 0.58));
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+  backdrop-filter: blur(20px) saturate(135%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 16px 36px rgba(0, 0, 0, 0.24);
+}
+
+.cyber-note-card {
+  display: flex;
+  min-height: 118px;
+  padding: 18px;
+  align-items: center;
+  gap: 14px;
+  border-radius: 18px;
+}
+
+.cyber-note-icon {
+  display: grid;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  color: #67e8f9;
+  border: 1px solid rgba(103, 232, 249, 0.2);
+  border-radius: 13px;
+  background: rgba(8, 145, 178, 0.12);
+}
+
+.cyber-note-card h2 { margin: 0 0 5px; color: #e9fcff; font-size: 13px; }
+.cyber-note-card p { margin: 0; color: #798ca5; font-size: 10px; line-height: 1.5; }
+
+.cyber-stat-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.cyber-stat-card { min-height: 118px; padding: 16px; border-radius: 18px; }
+.cyber-stat-topline { display: flex; align-items: center; gap: 6px; color: #7590a8; font: 9px var(--font-mono); }
+.cyber-stat-card strong { display: block; margin: 10px 0 3px; color: #b9f6fb; font: 800 clamp(20px, 2.4vw, 30px) var(--font-display); }
+.cyber-stat-card small { color: #687b93; font-size: 9px; }
+
+.cyber-hero-status {
+  display: flex;
+  width: min(1180px, 100%);
+  margin: 14px auto 0;
+  justify-content: space-between;
+  color: #41536a;
+  font: 8px var(--font-mono);
+  letter-spacing: 0.09em;
+}
+
+@keyframes cyberGridDrift { to { transform: translate3d(55px, 55px, 0); } }
+@keyframes cyberStatusPulse { 50% { opacity: 0.45; transform: scale(0.75); } }
+
 .intro-voice-gate {
   isolation: isolate;
   color: #e6fbff;
@@ -1115,12 +1407,70 @@ body {
 }
 
 @media (max-width: 960px) {
+  .cyber-nav-rail,
+  .cyber-nav-actions { display: none; }
+  .cyber-menu-toggle { display: inline-flex; }
+  .cyber-mobile-sheet {
+    position: absolute;
+    top: 68px;
+    left: 0;
+    right: 0;
+    display: flex;
+    padding: 12px;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid rgba(165, 243, 252, 0.16);
+    border-radius: 22px;
+    background: rgba(2, 9, 20, 0.94);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.42);
+  }
+  .cyber-mobile-sheet > button:not(.cyber-pill-action) {
+    padding: 12px 14px;
+    color: #b5c8db;
+    border-radius: 13px;
+    text-align: left;
+    font-size: 12px;
+  }
+  .cyber-mobile-sheet > button:not(.cyber-pill-action):hover {
+    color: #effeff;
+    background: rgba(103, 232, 249, 0.08);
+  }
+  .cyber-mobile-sheet .cyber-pill-action { margin-top: 5px; }
+  .cyber-hero-foot { grid-template-columns: 1fr; }
+
   .dashboard-page > .grid:last-child {
     grid-template-columns: 1fr !important;
   }
 }
 
 @media (max-width: 640px) {
+  .cyber-landing {
+    min-height: 100svh;
+    padding: 82px 12px 16px;
+    overflow-y: auto;
+  }
+  .cyber-pill-nav {
+    top: 10px;
+    width: calc(100% - 20px);
+    min-height: 54px;
+    padding: 6px 8px 6px 10px;
+  }
+  .cyber-brand { font-size: 10px; }
+  .cyber-brand-mark { width: 32px; height: 32px; }
+  .cyber-mobile-sheet { top: 62px; }
+  .cyber-hero-body { padding: 38px 4px 44px; }
+  .cyber-hero-body h1 { font-size: clamp(2.35rem, 13vw, 3.7rem); }
+  .cyber-hero-body > p { margin: 18px auto 24px; font-size: 13px; }
+  .cyber-hero-actions { width: 100%; }
+  .cyber-primary-cta,
+  .cyber-demo-cta { width: 100%; }
+  .cyber-note-card { min-height: 104px; }
+  .cyber-stat-row { grid-template-columns: 1fr; }
+  .cyber-stat-card { min-height: 96px; }
+  .cyber-hero-status { display: none; }
+
   .login-shell { padding: 18px 12px; }
   .login-glass-card { padding: 26px 20px 22px; border-radius: 22px; }
   .brute-blood-text { font-size: 21px; }
