@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { Session, Role } from '@/types';
+import { authenticateAnalyst } from '@/services/backendService';
 
 interface SessionContextValue {
   session: Session | null;
-  signIn: (email: string, password: string) => void;
+  signIn: (email: string, password: string) => Promise<void>;
   signInDemo: (role?: Role) => void;
   signOut: () => void;
 }
@@ -50,25 +51,29 @@ const DEMO_SESSIONS: Record<Role, Session> = {
 };
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<Session | null>(() => {
+    try { return JSON.parse(sessionStorage.getItem('sentineltrace_session') || 'null') as Session | null; }
+    catch { return null; }
+  });
 
-  const signIn = useCallback((email: string, _password: string) => {
-    setSession({
-      analystId: 'USR-01',
-      displayName: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-      email,
-      role: 'SOC_ANALYST',
-      unit: 'Email Security Operations',
-      signedInAt: new Date().toISOString(),
-      demo: false,
-    });
+  const signIn = useCallback(async (email: string, password: string) => {
+    const response = await authenticateAnalyst(email, password);
+    sessionStorage.setItem('sentineltrace_access_token', response.access_token);
+    sessionStorage.setItem('sentineltrace_session', JSON.stringify(response.session));
+    setSession(response.session);
   }, []);
 
   const signInDemo = useCallback((role: Role = 'SOC_ANALYST') => {
+    sessionStorage.removeItem('sentineltrace_access_token');
+    sessionStorage.setItem('sentineltrace_session', JSON.stringify(DEMO_SESSIONS[role]));
     setSession(DEMO_SESSIONS[role]);
   }, []);
 
-  const signOut = useCallback(() => setSession(null), []);
+  const signOut = useCallback(() => {
+    sessionStorage.removeItem('sentineltrace_access_token');
+    sessionStorage.removeItem('sentineltrace_session');
+    setSession(null);
+  }, []);
 
   return (
     <SessionContext.Provider value={{ session, signIn, signInDemo, signOut }}>
