@@ -162,7 +162,7 @@ export function Landing() {
       </section>
 
       <section id="capabilities" className="cyber-hero-foot" aria-label="Platform evidence">
-        <article className="cyber-note-card" data-water-reactive="true">
+        <article className="cyber-note-card">
           <div className="cyber-note-icon"><Network size={18} /></div>
           <div>
             <h2>Forensics beyond detection</h2>
@@ -172,7 +172,7 @@ export function Landing() {
 
         <div id="validation" className="cyber-stat-row">
           {STATS.map((stat, index) => (
-            <article key={stat.label} className="cyber-stat-card" data-water-reactive="true">
+            <article key={stat.label} className="cyber-stat-card">
               <div className="cyber-stat-topline">
                 {index === 0 ? <Activity size={14} /> : index === 1 ? <Shield size={14} /> : <Network size={14} />}
                 {stat.label}
