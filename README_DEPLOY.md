@@ -1,42 +1,60 @@
-Deployment checklist (no secrets in repo)
+# SentinelTrace deployment
 
-1) GitHub repository
-   - Go to your repository Settings → Secrets and variables → Actions → New repository secret.
-   - Add the following secrets:
-     - VERCEL_TOKEN — your Vercel Personal Token
-     - VERCEL_ORG_ID — Vercel organization id
-     - VERCEL_PROJECT_ID — Vercel project id for the frontend
-     - RENDER_API_KEY — Render API key (service key)
-     - RENDER_SERVICE_ID — Render service id for the backend
-     - DATABASE_URL — (optional) Supabase/Postgres connection string (if not using Render-managed env)
+This setup deploys the FastAPI backend to Render and the React frontend to
+Vercel. The backend must run from the repository root so it can load both the
+root requirements and the trained model under `ml/artifacts`.
 
-2) Vercel (Frontend)
-   - Import the repository in Vercel, root directory: `web`.
-   - In Project Settings → Environment Variables add `VITE_API_BASE_URL` = `https://<your-render-domain>`
-   - Link the project and deploy.
+## 1. Deploy the backend on Render
 
-3) Render (Backend)
-   - Create a new Web Service and connect the repository; set the root to `backend`.
-   - Build Command: `pip install -r requirements.txt` (repo root has requirements)
-   - Start Command: `gunicorn -w 4 -k uvicorn.workers.UvicornWorker main:app`
-   - In Environment, set `DATABASE_URL` to your Supabase Postgres connection and `ALLOWED_ORIGINS` to your Vercel domain.
-   - Alternatively, create the service by importing `render.yaml` during setup.
+1. In Render, choose **New > Blueprint** and connect
+   `lovelybrute/SentinelTrace`.
+2. Select the repository-root `render.yaml`.
+3. Set `ALLOWED_ORIGINS=https://YOUR-VERCEL-DOMAIN` when Render prompts you.
+4. For persistent production data, add `DATABASE_URL` in the Render dashboard
+   with a managed PostgreSQL URL. A temporary demo can omit it and use SQLite;
+   free-instance files can be lost during redeployment or restart.
+5. Deploy and wait for the health check to pass.
 
-4) Supabase (Database)
-   - Create project and copy the DATABASE_URL (connection string).
-   - Add it to Render as `DATABASE_URL` secret.
+The blueprint uses Python 3.12, installs `requirements.txt`, and starts:
 
-5) Automated deploys
-   - Push to `main` branch. GitHub Actions `CI & Deploy` will build the frontend and trigger Vercel, then trigger a Render deploy.
+```bash
+cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+```
 
-Notes and troubleshooting
-- Do NOT commit any `.env` or secret files. Use the GitHub Secrets UI and the cloud dashboards.
-- If CORS errors occur, set `ALLOWED_ORIGINS` on the Render service to your Vercel domain (no trailing slash).
-- If database migrations are needed, consider adding Alembic; currently backend uses `create_all()` on startup.
+Do not add a Render root directory. Doing so prevents the backend from reading
+the trained model under `ml/artifacts`.
 
-Files added to repo:
-- `render.yaml` — optional Render import config
-- `web/vercel.json` — Vercel build config
-- `.github/workflows/deploy.yml` — GitHub Actions CI & deploy
+## 2. Deploy the frontend on Vercel
 
-If you want, I can now: (1) open pull request with these CI files, or (2) help you populate the GitHub secrets (instructions).
+1. Import `lovelybrute/SentinelTrace` into Vercel.
+2. Set **Root Directory** to `web`.
+3. Keep the detected Vite build settings (`npm run build`, output `dist`).
+4. Add:
+   - `VITE_API_BASE_URL=https://YOUR-RENDER-SERVICE.onrender.com`
+5. Deploy or redeploy after saving the variable.
+
+Return to Render and ensure `ALLOWED_ORIGINS` exactly matches the final Vercel
+origin, including `https://` and without a trailing slash.
+
+## 3. Verify production
+
+Open:
+
+- `https://YOUR-RENDER-SERVICE.onrender.com/`
+- `https://YOUR-RENDER-SERVICE.onrender.com/docs`
+- `https://YOUR-RENDER-SERVICE.onrender.com/model/metrics`
+- `https://YOUR-VERCEL-DOMAIN/model-performance`
+- `https://YOUR-VERCEL-DOMAIN/analyzer`
+
+Upload a non-sensitive test `.eml` and confirm the result displays
+**Validated phishing probability**. Never upload private evidence to a demo.
+
+## 4. Automatic checks
+
+GitHub Actions runs local-only backend tests and the frontend production build.
+Render deploys `main` after those checks pass. Vercel can deploy `main`
+through its native Git integration, so the workflow needs no provider secrets.
+
+If deployment fails, inspect the provider build log first. Common causes are a
+missing environment variable, an incorrect frontend API URL, or an
+`ALLOWED_ORIGINS` value that does not exactly match the frontend origin.
