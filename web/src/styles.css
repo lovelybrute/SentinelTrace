@@ -951,7 +951,8 @@ body {
 
 .intro-voice-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 360px);
+  justify-content: center;
   gap: 10px;
   margin-bottom: 18px;
 }
