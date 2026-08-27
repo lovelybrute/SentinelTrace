@@ -14,6 +14,7 @@
  */
 
 import { ApiError, request } from './http';
+import type { Session } from '@/types';
 import type {
   WireAnalysis,
   WireCountryThreat,
@@ -32,6 +33,22 @@ export interface BackendIdentity {
 
 export function fetchIdentity(signal?: AbortSignal): Promise<BackendIdentity> {
   return request<BackendIdentity>('/', signal ? { signal } : {});
+}
+
+export interface LoginResponse {
+  access_token: string;
+  token_type: 'bearer';
+  expires_in: number;
+  session: Session;
+}
+
+export function authenticateAnalyst(email: string, password: string): Promise<LoginResponse> {
+  return request<LoginResponse>('/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+    timeoutMs: 12_000,
+  });
 }
 
 /**
