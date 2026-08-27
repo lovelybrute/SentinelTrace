@@ -119,14 +119,30 @@ class ThreatScorer:
         # ----------------------------------------------------
         # 2. ML Probability Component (Max 40 points towards total)
         # ----------------------------------------------------
-        probs = ml_prediction.get("probabilities", {})
-        legit_prob = probs.get("LEGITIMATE", 0.5)
-        malicious_prob = 1.0 - legit_prob
-        ml_subscore = round(malicious_prob * 100.0, 1)
+        # Prefer the independently trained binary model for the risk score.
+        # The prototype multi-class model remains useful for naming the likely
+        # attack subtype, but its tiny synthetic baseline must not drive the
+        # quantitative ML contribution when validated probabilities exist.
+        prototype_probs = ml_prediction.get("probabilities", {})
+        validated = ml_prediction.get("validated_binary_model", {})
+        validated_probs = validated.get("probabilities", {}) if isinstance(validated, dict) else {}
+        validated_phishing_prob = validated_probs.get("PHISHING")
+
+        if isinstance(validated_phishing_prob, (int, float)) and 0 <= validated_phishing_prob <= 1:
+            ml_subscore = round(float(validated_phishing_prob) * 100.0, 1)
+            ml_probability_source = "VALIDATED_BINARY_MODEL"
+        else:
+            legit_prob = float(prototype_probs.get("LEGITIMATE", 0.5))
+            ml_subscore = round((1.0 - legit_prob) * 100.0, 1)
+            ml_probability_source = "PROTOTYPE_MULTICLASS_FALLBACK"
 
         if ml_subscore > 50:
             signals.append({
-                "signal": f"ML model threat classification ({ml_prediction.get('primary_classification', 'THREAT')})",
+                "signal": (
+                    f"Validated phishing probability ({ml_subscore:.1f}%)"
+                    if ml_probability_source == "VALIDATED_BINARY_MODEL"
+                    else f"Prototype ML threat classification ({ml_prediction.get('primary_classification', 'THREAT')})"
+                ),
                 "points": round(ml_subscore * 0.4, 1),
                 "weight_category": "STRONG"
             })
@@ -216,7 +232,14 @@ class ThreatScorer:
                 "forensic_rules_contribution": round(forensic_subscore * 0.35, 1),
                 "ml_model_contribution": round(ml_subscore * 0.40, 1),
                 "infrastructure_contribution": round(rep_subscore * 0.15, 1),
-                "campaign_contribution": round(camp_subscore * 0.10, 1)
+                "campaign_contribution": round(camp_subscore * 0.10, 1),
+                "ml_probability_source": ml_probability_source,
+                "validated_phishing_probability": (
+                    round(float(validated_phishing_prob) * 100.0, 1)
+                    if isinstance(validated_phishing_prob, (int, float)) else None
+                ),
+                "prototype_primary_classification": ml_prediction.get("primary_classification"),
+                "prototype_confidence": ml_prediction.get("confidence_score"),
             },
             "top_contributing_signals": sorted(signals, key=lambda s: s["points"], reverse=True)[:6],
             "risk_factors": [s["signal"] for s in signals],
