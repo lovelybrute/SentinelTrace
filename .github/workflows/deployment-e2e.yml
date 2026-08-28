@@ -1,0 +1,76 @@
+name: Deployment E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      frontend_url:
+        description: Frontend base URL
+        required: false
+        default: https://sentinel-trace.vercel.app
+      backend_url:
+        description: Backend base URL
+        required: false
+        default: https://sentineltrace-backend.onrender.com
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-e2e
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DEFAULT_FRONTEND_URL: https://sentinel-trace.vercel.app
+      DEFAULT_BACKEND_URL: https://sentineltrace-backend.onrender.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for providers to publish the checked commit
+        if: github.event_name == 'workflow_run'
+        run: sleep 120
+
+      - name: Resolve deployment URLs
+        id: urls
+        env:
+          INPUT_FRONTEND: ${{ inputs.frontend_url }}
+          INPUT_BACKEND: ${{ inputs.backend_url }}
+        run: |
+          echo "frontend=${INPUT_FRONTEND:-$DEFAULT_FRONTEND_URL}" >> "$GITHUB_OUTPUT"
+          echo "backend=${INPUT_BACKEND:-$DEFAULT_BACKEND_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify deployed frontend, backend, ML, and Guardian
+        run: |
+          python scripts/verify_deployment.py \
+            --frontend "${{ steps.urls.outputs.frontend }}" \
+            --backend "${{ steps.urls.outputs.backend }}" \
+            --attempts 8 \
+            --delay 15 \
+            --json-out deployment-e2e-report.json
+
+      - name: Publish verification summary
+        if: always()
+        run: |
+          if [ -f deployment-e2e-report.json ]; then
+            echo "## SentinelTrace deployment verification" >> "$GITHUB_STEP_SUMMARY"
+            echo '~~~json' >> "$GITHUB_STEP_SUMMARY"
+            cat deployment-e2e-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '~~~' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-e2e-report
+          path: deployment-e2e-report.json
+          if-no-files-found: ignore
+          retention-days: 14
