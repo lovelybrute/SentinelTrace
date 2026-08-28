@@ -10,10 +10,18 @@ root requirements and the trained model under `ml/artifacts`.
    `lovelybrute/SentinelTrace`.
 2. Select the repository-root `render.yaml`.
 3. Set `ALLOWED_ORIGINS=https://YOUR-VERCEL-DOMAIN` when Render prompts you.
-4. For persistent production data, add `DATABASE_URL` in the Render dashboard
-   with a managed PostgreSQL URL. A temporary demo can omit it and use SQLite;
-   free-instance files can be lost during redeployment or restart.
+4. Apply the Blueprint. It creates `sentineltrace-postgres` and injects its
+   private connection string into the backend as `DATABASE_URL`.
 5. Deploy and wait for the health check to pass.
+
+The managed database preserves analyses, cases, IOCs, campaigns, evidence
+metadata and audit logs across backend restarts and deployments. Render does
+not automatically copy records from the old ephemeral SQLite file. Treat that
+file as disposable demo data unless you explicitly export and migrate it.
+
+The database blocks public network access (`ipAllowList: []`); the backend uses
+Render's private connection string. Do not paste the database password or URL
+into GitHub, Vercel, screenshots, or client-side environment variables.
 
 The blueprint uses Python 3.12, installs `requirements.txt`, and starts:
 
@@ -58,3 +66,7 @@ through its native Git integration, so the workflow needs no provider secrets.
 If deployment fails, inspect the provider build log first. Common causes are a
 missing environment variable, an incorrect frontend API URL, or an
 `ALLOWED_ORIGINS` value that does not exactly match the frontend origin.
+
+If this Blueprint already exists, open it in Render and select **Manual Sync**
+after this change reaches `main`. Confirm both resources become green, then
+create a test case, redeploy the backend, and verify the case still exists.

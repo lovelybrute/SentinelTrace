@@ -20,13 +20,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Run local-only backend tests
-        run: >-
-          pytest -q
-          backend/tests/test_spf.py
-          backend/tests/test_dkim_dmarc.py
-          backend/tests/test_received_parser.py
-          backend/tests/test_ml_engine.py
-          backend/tests/test_threat_scorer.py
+        run: pytest -q backend/tests
 
   frontend:
     runs-on: ubuntu-latest
