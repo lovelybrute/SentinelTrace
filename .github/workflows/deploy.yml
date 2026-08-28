@@ -35,5 +35,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - name: Test Browser Guardian core
+        run: node ../extension/tests/core.test.cjs
       - run: npm run typecheck
       - run: npm run build

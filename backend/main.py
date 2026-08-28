@@ -22,7 +22,7 @@ from report_generator import ReportGenerator
 from stix_exporter import STIXExporter
 from validated_model import read_model_metrics
 from auth import authenticate, configured_users, decode_token, issue_token
-from threat_intel import lookup as lookup_threat_intel
+from threat_intel import guardian_verdict, lookup as lookup_threat_intel
 
 
 # ============================================================
@@ -180,6 +180,15 @@ def threat_intel_lookup(indicator: str = Query(..., min_length=3, max_length=253
     """Look up one validated IP/domain using configured provider accounts."""
     try:
         return lookup_threat_intel(indicator)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/guardian/check")
+def browser_guardian_check(domain: str = Query(..., min_length=3, max_length=253)):
+    """Return a domain-only reputation verdict for the Browser Guardian."""
+    try:
+        return guardian_verdict(domain)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

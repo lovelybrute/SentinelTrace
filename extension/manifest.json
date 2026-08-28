@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "SentinelTrace Browser Guardian",
+  "version": "1.0.0",
+  "description": "Privacy-preserving phishing domain checks powered by SentinelTrace.",
+  "permissions": ["storage", "tabs", "webNavigation"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {"service_worker": "background.js"},
+  "action": {
+    "default_title": "SentinelTrace Browser Guardian",
+    "default_popup": "popup/popup.html"
+  },
+  "options_page": "options/options.html",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

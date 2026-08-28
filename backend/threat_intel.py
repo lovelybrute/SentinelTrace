@@ -67,3 +67,59 @@ def lookup(value: str) -> dict[str, Any]:
     result = {"indicator": indicator, "type": kind, "providers": providers, "cache": "miss", "attribution_limit": "Reputation is an investigative signal, not proof of operator identity or physical location."}
     _cache[indicator] = (time.time(), result)
     return result
+
+
+def guardian_verdict(value: str) -> dict[str, Any]:
+    """Return a conservative, browser-safe reputation verdict for a domain."""
+    if classify_indicator(value) != "domain":
+        raise ValueError("Browser Guardian accepts DNS hostnames only.")
+
+    result = lookup(value)
+    vt = result["providers"].get("virustotal", {})
+    stats = vt.get("last_analysis_stats", {}) if vt.get("status") == "ok" else {}
+    malicious = int(stats.get("malicious") or 0)
+    suspicious = int(stats.get("suspicious") or 0)
+    harmless = int(stats.get("harmless") or 0)
+
+    if malicious >= 5:
+        verdict, score = "dangerous", 95
+    elif malicious >= 2:
+        verdict, score = "dangerous", 85
+    elif malicious == 1 or suspicious >= 2:
+        verdict, score = "suspicious", 70
+    elif suspicious == 1:
+        verdict, score = "caution", 45
+    elif harmless > 0:
+        verdict, score = "low_risk", 10
+    else:
+        verdict, score = "unknown", 25
+
+    reasons: list[str] = []
+    if malicious:
+        reasons.append(f"{malicious} reputation engine(s) marked this domain malicious.")
+    if suspicious:
+        reasons.append(f"{suspicious} reputation engine(s) marked this domain suspicious.")
+    if not reasons and harmless:
+        reasons.append("No configured reputation engine currently flags this domain.")
+    if not reasons:
+        reasons.append("No conclusive reputation evidence is currently available.")
+
+    return {
+        "domain": result["indicator"],
+        "verdict": verdict,
+        "risk_score": score,
+        "confidence": "high" if malicious >= 2 else "medium" if malicious or suspicious else "low",
+        "reasons": reasons,
+        "provider_summary": {
+            "virustotal": {
+                "status": vt.get("status", "unavailable"),
+                "malicious": malicious,
+                "suspicious": suspicious,
+                "harmless": harmless,
+            }
+        },
+        "cache": result["cache"],
+        "checked_at": int(time.time()),
+        "privacy": "Only the normalized domain was checked; no page path, query, content, cookies, or browsing history was submitted.",
+        "limitation": "Reputation is an investigative signal, not proof of safety, operator identity, or physical location.",
+    }
