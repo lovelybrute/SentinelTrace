@@ -124,6 +124,9 @@ cd web && npm run typecheck
 
 # Run production build
 cd web && npm run build
+
+# Run Browser Guardian domain-heuristic tests
+node extension/tests/core.test.cjs
 ```
 
 ### Train the validated phishing model
@@ -201,6 +204,12 @@ SIH26106_SentinelTrace/
 │       │   ├── CaseManagement.tsx # SOC Case Workflow & Chain of Custody
 │       │   └── ForensicReports.tsx # Exportable Investigation Reports
 │       └── services/             # Typed API Client & Wire Schema Layer
+│
+├── extension/                    # Chrome/Edge Manifest V3 Browser Guardian
+│   ├── background.js             # Domain-only checks, cache and warning routing
+│   ├── popup/                    # Current-domain verdict interface
+│   ├── warning/                  # High-risk interstitial with explicit bypass
+│   └── options/                  # Backend, threshold and cache controls
 │
 ├── samples/                      # Forensic demonstration attack vectors (.eml)
 ├── SIH_REQUIREMENT_MAPPING.md    # Judge-Facing Requirement Traceability Matrix

@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../styles.css"></head>
+<body class="options"><main><p class="eyebrow">SENTINELTRACE</p><h1>Browser Guardian settings</h1>
+<label class="toggle"><input id="enabled" type="checkbox"> Enable automatic domain protection</label>
+<label>SentinelTrace backend<input id="api" type="url" placeholder="https://sentineltrace-backend.onrender.com"></label>
+<label>Warning threshold <output id="thresholdValue">75</output><input id="threshold" type="range" min="60" max="95" step="5"></label>
+<label>Cache duration (minutes)<input id="cache" type="number" min="5" max="60"></label>
+<button id="save">Save settings</button><p id="saved"></p>
+<section class="privacy"><b>Privacy design</b><p>Guardian sends only normalized domains to your configured SentinelTrace backend. It does not collect page paths, query strings, content, cookies, form entries, account identities, or a browsing-history feed.</p></section></main>
+<script src="options.js"></script></body></html>
