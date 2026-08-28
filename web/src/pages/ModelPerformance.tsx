@@ -38,9 +38,22 @@ export function ModelPerformance() {
           {[['Accuracy', selected?.accuracy], ['Precision', selected?.precision_macro], ['Recall', selected?.recall_macro], ['Macro F1', selected?.f1_macro]].map(([label, value]) => <div className="panel p-5" key={String(label)}><div className="text-xs text-slate-400">{label}</div><div className="text-2xl font-black text-cyan-300 mt-2">{percent(value as number | undefined)}</div></div>)}
         </div>
         <div className="grid md:grid-cols-2 gap-5">
-          <div className="panel p-5"><div className="flex items-center gap-2 font-bold"><Database size={16}/>Dataset evidence</div><dl className="mt-4 text-sm space-y-2 text-slate-300"><div>Corpus: {data.dataset_name || 'User-supplied corpus'}</div><div>Records: {data.dataset_records}</div><div>Train/Test: {data.train_records} / {data.test_records}</div><div>Labels: {data.labels?.join(', ')}</div><div>Model: {data.selected_model}</div>{data.dataset_citation && <div className="text-xs text-slate-400 break-words">Citation: {data.dataset_citation}</div>}</dl></div>
+          <div className="panel p-5"><div className="flex items-center gap-2 font-bold"><Database size={16}/>Dataset evidence</div><dl className="mt-4 text-sm space-y-2 text-slate-300"><div>Corpus: {data.dataset_name || 'User-supplied corpus'}</div><div>Records: {data.dataset_records}</div><div>Fit/Calibration/Test: {data.train_records} / {data.calibration_records ?? '—'} / {data.test_records}</div><div>Labels: {data.labels?.join(', ')}</div><div>Model: {data.selected_model}</div>{data.dataset_citation && <div className="text-xs text-slate-400 break-words">Citation: {data.dataset_citation}</div>}</dl></div>
           <div className="panel p-5"><div className="flex items-center gap-2 font-bold"><ShieldCheck size={16}/>Validation status</div><div className="mt-4 font-mono text-cyan-300">{data.validation_status}</div><p className="text-sm text-slate-400 mt-3">{data.limitations}</p></div>
         </div>
+        {data.decision_policy && (
+          <div className="panel p-5 border border-violet-500/25">
+            <div className="flex items-center gap-2 font-bold text-violet-300"><BrainCircuit size={16}/>Calibrated decision policy</div>
+            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div><div className="text-xs text-slate-500">Legitimate at or below</div><div className="text-xl font-black text-emerald-300">{percent(data.decision_policy.thresholds.legitimate_max)}</div></div>
+              <div><div className="text-xs text-slate-500">Phishing at or above</div><div className="text-xl font-black text-red-300">{percent(data.decision_policy.thresholds.phishing_min)}</div></div>
+              <div><div className="text-xs text-slate-500">Human-review rate</div><div className="text-xl font-black text-amber-300">{percent(data.decision_policy.untouched_test_metrics.review_rate)}</div></div>
+              <div><div className="text-xs text-slate-500">Automatic coverage</div><div className="text-xl font-black text-cyan-300">{percent(data.decision_policy.untouched_test_metrics.automatic_coverage)}</div></div>
+            </div>
+            <p className="mt-4 text-sm text-slate-300">Scores between the two thresholds return <strong>NEEDS_REVIEW</strong>. This prevents uncertain messages from being forced into a binary verdict.</p>
+            <p className="mt-2 text-xs text-slate-500">{data.decision_policy.calibration_data_scope}</p>
+          </div>
+        )}
         {data.external_validation && (
           <div className="panel p-5 border border-cyan-500/25">
             <div className="flex items-center gap-2 font-bold text-cyan-300"><ShieldCheck size={16}/>Independent validation</div>
