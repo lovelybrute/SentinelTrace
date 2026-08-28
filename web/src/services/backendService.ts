@@ -124,11 +124,25 @@ export interface ModelMetrics {
   source_distribution?: Record<string, number>;
   label_scope?: string;
   train_records?: number;
+  calibration_records?: number;
   test_records?: number;
   labels?: string[];
   selected_model?: string;
   models?: Record<string, { accuracy: number; precision_macro: number; recall_macro: number; f1_macro: number; confusion_matrix: number[][] }>;
   limitations?: string;
+  decision_policy?: {
+    status: string;
+    verdicts: string[];
+    thresholds: { legitimate_max: number; phishing_min: number };
+    calibration_data_scope: string;
+    untouched_test_metrics: {
+      review_rate: number;
+      automatic_coverage: number;
+      automatic_decision_accuracy: number | null;
+      benign_auto_flag_rate: number;
+      phishing_auto_miss_rate: number;
+    };
+  };
   external_validation?: {
     evaluation_status: string;
     dataset_name: string;
