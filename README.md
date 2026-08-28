@@ -12,6 +12,21 @@ SentinelTrace is an SIH prototype cyber digital-forensics and threat-intelligenc
 
 Combining **RFC-compliant protocol verification**, **cryptographic chain-of-custody tracking**, **machine learning classification**, **3D infrastructure visualizations**, and an **AI investigation copilot**, SentinelTrace provides full lifecycle email threat analysis from raw RFC 5322 MIME ingestion to OASIS STIX 2.1 threat intelligence export.
 
+## 🎯 Project at a Glance
+
+- Complete email-forensics workflow—not merely ML classification
+- RFC-aware SPF, DKIM and DMARC verification
+- SMTP relay-chain reconstruction, geolocation and origin assessment
+- Explainable hybrid threat scoring
+- BEC, lookalike-domain and attachment analysis
+- MITRE ATT&CK mapping, OASIS STIX 2.1 export and SOC case management
+- Trained ML model with reproducible, integrity-checked artifacts
+- Independent evaluation against 2,000 labelled messages
+- Chrome and Edge Browser Guardian extension
+- Live deployment using Vercel, Render and PostgreSQL
+- Automated CI and live end-to-end deployment verification
+- Professional forensic SOC interface with interactive 3D investigation views
+
 ---
 
 ## ⚡ Key Highlights & Technical Differentiators
@@ -150,7 +165,7 @@ does not imply broader validation than the source labels support.
 
 Open **Model Performance** in the dashboard to see held-out precision, recall, macro F1, class support, and validation status. The backend activates the saved classifier only after minimum held-out support is met; smaller experiments remain labeled as prototypes. See `ml/README.md`.
 
-The repository model was trained on 106,159 deduplicated records from the uploaded MeAJOR v2.0 release and achieved 98.74% accuracy / 98.73% macro F1 on a 21,232-record stratified holdout. These results apply only to that corpus. Its TREC-derived positive class includes broad unsolicited/malicious email, so SentinelTrace displays it as phishing-proxy evidence and does not claim phishing-only or real-world production validation.
+The repository model was trained on 106,559 deduplicated records, including 400 clearly identified synthetic robustness examples, and achieved 98.85% accuracy / 98.84% macro F1 on a 21,312-record stratified holdout. Independent evaluation on 2,000 excluded labelled messages achieved 80.35% accuracy / 79.56% macro F1. These results are reported separately: same-corpus holdout performance is not presented as universal real-world accuracy, and the independent benchmark's 39.3% benign false-positive rate remains a documented limitation.
 
 ### Data provenance in the interface
 
