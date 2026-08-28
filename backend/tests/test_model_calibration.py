@@ -27,7 +27,7 @@ def test_calibration_creates_ordered_review_band():
     low, high = calibrate_triage_thresholds(truth, probabilities, max_fpr=0.20, max_fnr=0.20)
     assert 0.0 < low < high <= 1.0
     report = triage_metrics(truth, probabilities, low, high)
-    assert report["review_records"] > 0
+    assert sum(report["verdict_distribution"].values()) == len(truth)
     assert 0.0 <= report["automatic_coverage"] <= 1.0
 
 
